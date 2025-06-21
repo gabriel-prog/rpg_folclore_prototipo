@@ -10,13 +10,22 @@
 <body>
     <div class="container">
         <h1 id="gameTitle">🌌 RPG Folclore Hacker - Jornada no Alasca 🌌</h1>
-        <div id="gameScreen"></div>
+        <div id="gameScreen">
+            <p>Carregando jogo...</p>
+        </div>
+        <div id="gameStats">
+            <p>Energia: <span id="energiaDisplay">100</span>%</p>
+            <div id="energiaBar"><div id="energiaFill"></div></div>
+            <p id="timer"></p>
+        </div>
     </div>
     <canvas id="matrixCanvas"></canvas>
+
     <audio id="clickSound" src="sounds/click.mp3"></audio>
     <audio id="attackSound" src="sounds/attack.mp3"></audio>
     <audio id="alertSound" src="sounds/alert.mp3"></audio>
     <audio id="ambientSound" src="sounds/ambient.mp3" loop></audio>
+
     <script src="script.js"></script>
 </body>
 </html>

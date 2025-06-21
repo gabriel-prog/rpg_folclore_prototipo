@@ -1,33 +1,46 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #dbeeff;
-    color: #333;
+    font-family: 'Share Tech Mono', monospace;
+    background-color: #0c0c0c;
+    color: #00ff99;
     text-align: center;
     margin: 0;
     padding: 20px;
 }
 
 .container {
-    max-width: 600px;
+    max-width: 700px;
     margin: auto;
-    background: white;
-    padding: 20px;
+    background: #1c1c1c;
+    padding: 25px;
     border-radius: 10px;
-    box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 0 20px #00ff99;
 }
 
 input, select, button {
-    width: 80%;
+    width: 90%;
     margin: 10px 0;
-    padding: 8px;
+    padding: 10px;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #00ff99;
+    background-color: #0c0c0c;
+    color: #00ff99;
 }
+
 button {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #00ff99;
+    color: #0c0c0c;
     cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
 }
+
 button:hover {
-    background-color: #45a049;
+    background-color: #00cc77;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+    text-align: left;
+    margin-left: 5%;
 }

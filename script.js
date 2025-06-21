@@ -1,1039 +1,865 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const gameTitle = document.getElementById('gameTitle');
-    const gameScreen = document.getElementById('gameScreen');
-    const energyBar = document.getElementById('energiaBar');
-    const energyFill = document.getElementById('energiaFill');
-    const energiaDisplay = document.getElementById('energiaDisplay');
-    const timerDisplay = document.getElementById('timer');
-    const playerInventoryDiv = document.getElementById('playerInventory');
-    const inventoryList = document.getElementById('inventoryList');
-    const statsDiv = document.querySelector('.stats');
+// script.js
 
-    // Áudios
-    const clickSound = document.getElementById('clickSound');
-    const attackSound = document.getElementById('attackSound');
-    const alertSound = document.getElementById('alertSound');
-    const ambientSound = document.getElementById('ambientSound');
-    const fase2Music = document.getElementById('fase2Music');
-    const bossMusic = document.getElementById('bossMusic');
-    const hackSuccessSound = document.getElementById('hackSuccessSound');
-    const hackFailSound = document.getElementById('hackFailSound');
-    const snowWalkSound = document.getElementById('snowWalkSound');
-    const suspenseMusic = document.getElementById('suspenseMusic');
+// Variáveis globais do jogo
+let energia = 100;
+let reputacao = 0;
+let faseAtual = 0;
+let escolhasFeitas = {};
+let temporizador; // Não está sendo usado no momento, mas mantido caso queira adicionar cronômetros
+let segundosRestantes; // Não está sendo usado no momento
+let inventario = []; // Novo: Inventário do jogador
+let player = {
+    nickname: '',
+    classe: '',
+    altura: ''
+}; // Novo: Dados do jogador
 
-    let currentMusic = null;
-    let audioContextResumed = false; // Flag para controlar o contexto de áudio
+// Elementos do DOM
+const gameScreen = document.getElementById('gameScreen');
+const gameTitle = document.getElementById('gameTitle');
+const energiaValue = document.getElementById('energiaValue');
+const energiaFill = document.getElementById('energiaFill');
+const reputacaoValue = document.getElementById('reputacaoValue');
+const inventarioList = document.getElementById('inventarioList');
+const inventarioContainer = document.getElementById('inventarioContainer');
+const regrasObjetivosMissoesContainer = document.getElementById('regrasObjetivosMissoesContainer');
+const regrasContent = document.getElementById('regrasContent');
+const objetivosContent = document.getElementById('objetivosContent');
+const missoesContent = document.getElementById('missoesContent');
+const hud = document.getElementById('hud');
 
-    // Canvas Matrix Effect
-    const matrixCanvas = document.getElementById('matrixCanvas');
-    const ctx = matrixCanvas.getContext('2d');
-    let matrixEffectInterval;
+// Sons
+const clickSound = document.getElementById('clickSound');
+const attackSound = document.getElementById('attackSound');
+const alertSound = document.getElementById('alertSound');
+const ambientSound = document.getElementById('ambientSound');
 
-    const transitionOverlay = document.getElementById('transitionOverlay');
+// --- Efeito Matrix ---
+const canvas = document.getElementById('matrixCanvas');
+const ctx = canvas.getContext('2d');
+let cw = window.innerWidth;
+let ch = window.innerHeight;
+let matrix = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%';
+matrix = matrix.split('');
+let font_size = 10;
+let columns = cw / font_size;
+let drops = [];
+for (let x = 0; x < columns; x++) {
+    drops[x] = 1;
+}
 
-    let currentEnergy = 100;
-    let currentPhaseId = 0;
-    let timerInterval;
-    let playerInventory = []; // Armazena objetos { name: string, icon: string }
-    let rankingScore = 0;
-    let difficultyMultiplier = 1; // Não utilizado ainda, mas mantido para futuras implementações
-    let playerReputation = 0; // -100 (Agente Secreto) a +100 (Hacktivista)
-
-    let playerName = ''; // Novo: Nome do jogador
-    let playerClass = ''; // Novo: Classe do jogador
-
-    // Definição das classes e seus bônus
-    const playerClasses = {
-        'Hacker de Elite': {
-            description: "Um mestre em invasões digitais e engenharia reversa. Começa com alta energia e um item chave.",
-            initialEnergy: 120,
-            initialItem: {name: "Chave Mestra Universal", icon: "images/icon_key.png"},
-            initialReputation: 10
-        },
-        'Engenheiro Reverso': {
-            description: "Especialista em desvendar sistemas complexos e otimizar recursos. Menor consumo de energia em certas ações.",
-            initialEnergy: 100,
-            initialItem: {name: "Detector de Ilusões Digitais", icon: "images/icon_detector.png"},
-            initialReputation: 0
-        },
-        'Infiltrador Silencioso': {
-            description: "Prioriza a furtividade e a manipulação de informações. Começa com um boost de reputação hacktivista.",
-            initialEnergy: 80,
-            initialItem: {name: "Rede de Captura Óptica", icon: "images/icon_net.png"},
-            initialReputation: 20
+function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.fillStyle = '#00ff99';
+    ctx.font = font_size + 'px VT323';
+    for (let i = 0; i < drops.length; i++) {
+        let text = matrix[Math.floor(Math.random() * matrix.length)];
+        ctx.fillText(text, i * font_size, drops[i] * font_size);
+        if (drops[i] * font_size > ch && Math.random() > 0.975) {
+            drops[i] = 0;
         }
-    };
-
-    // --- Funções de Áudio ---
-    function resumeAudioContext() {
-        if (!audioContextResumed) {
-            // Tenta desmutar todos os áudios e dar play para "ativar" o contexto
-            [clickSound, attackSound, alertSound, ambientSound, fase2Music, bossMusic, hackSuccessSound, hackFailSound, snowWalkSound, suspenseMusic].forEach(audio => {
-                if (audio) {
-                    audio.muted = false;
-                    audio.play().catch(e => console.log("Áudio inicial play com erro, mas desmutado:", e));
-                }
-            });
-            audioContextResumed = true;
-            console.log("Contexto de áudio resumido.");
-            // Garante que a música ambiente comece se for a fase 1
-            if (currentPhaseId === 1 && phases[1].music && currentMusic !== phases[1].music) {
-                playMusic(phases[1].music);
-            }
-        }
+        drops[i]++;
     }
-
-    function playSound(audioElement) {
-        if (audioElement && audioContextResumed) {
-            audioElement.currentTime = 0;
-            audioElement.play().catch(e => console.error("Erro ao tocar som:", e));
-        }
+}
+window.addEventListener('resize', () => {
+    cw = window.innerWidth;
+    ch = window.innerHeight;
+    canvas.width = cw;
+    canvas.height = ch;
+    columns = cw / font_size;
+    drops = [];
+    for (let x = 0; x < columns; x++) {
+        drops[x] = 1;
     }
-
-    function playMusic(musicElement) {
-        if (!audioContextResumed) {
-            console.log("Contexto de áudio não resumido. Música não será tocada.");
-            return;
-        }
-
-        if (currentMusic && currentMusic !== musicElement) {
-            currentMusic.pause();
-            currentMusic.currentTime = 0;
-        }
-        if (musicElement) {
-            musicElement.volume = 0.5;
-            musicElement.play().catch(e => console.error("Erro ao tocar música:", e));
-            currentMusic = musicElement;
-        } else {
-            if (currentMusic) {
-                currentMusic.pause();
-                currentMusic.currentTime = 0;
-            }
-            currentMusic = null;
-        }
-    }
-
-    // --- Funções de Jogo ---
-
-    function updateEnergy(amount) {
-        currentEnergy += amount;
-        if (currentEnergy > 100) currentEnergy = 100;
-        if (currentEnergy <= 0) {
-            currentEnergy = 0;
-            gameOver("Sua energia se esgotou! Fim da jornada.");
-            return;
-        }
-        energyFill.style.width = `${currentEnergy}%`;
-        energiaDisplay.textContent = currentEnergy;
-
-        // Efeitos visuais para a energia
-        if (currentEnergy > 60) {
-            energyFill.style.backgroundColor = '#00ff00';
-            energiaDisplay.classList.remove('low-energy', 'critical-energy');
-        } else if (currentEnergy > 30) {
-            energyFill.style.backgroundColor = '#ffff00';
-            energiaDisplay.classList.add('low-energy');
-            energiaDisplay.classList.remove('critical-energy');
-        } else {
-            energyFill.style.backgroundColor = '#ff0000';
-            energiaDisplay.classList.add('critical-energy');
-            energiaDisplay.classList.remove('low-energy');
-        }
-    }
-
-    function startTimer(duration, onTimeout) {
-        let timeLeft = duration;
-        timerDisplay.textContent = `Tempo: ${timeLeft}s`;
-        timerDisplay.classList.remove('timer-warning', 'timer-critical');
-
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            timerDisplay.textContent = `Tempo: ${timeLeft}s`;
-
-            if (timeLeft <= 10 && timeLeft > 5) {
-                timerDisplay.classList.add('timer-warning');
-                timerDisplay.classList.remove('timer-critical');
-            } else if (timeLeft <= 5) {
-                timerDisplay.classList.add('timer-critical');
-                timerDisplay.classList.remove('timer-warning');
-            } else {
-                timerDisplay.classList.remove('timer-warning', 'timer-critical');
-            }
-
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                onTimeout();
-            }
-        }, 1000);
-    }
-
-    function stopTimer() {
-        clearInterval(timerInterval);
-        timerDisplay.textContent = '';
-        timerDisplay.classList.remove('timer-warning', 'timer-critical');
-    }
-
-    function addItemToInventory(item) {
-        if (!playerInventory.some(i => i.name === item.name)) {
-             playerInventory.push(item);
-             updateInventoryDisplay();
-             saveProgress();
-        }
-    }
-
-    function hasItem(itemName) {
-        return playerInventory.some(item => item.name === itemName);
-    }
-
-    function updateInventoryDisplay() {
-        if (playerInventory.length > 0) {
-            playerInventoryDiv.classList.remove('hidden');
-            inventoryList.innerHTML = '';
-            playerInventory.forEach(item => {
-                const li = document.createElement('li');
-                const itemIcon = document.createElement('img');
-                itemIcon.src = item.icon;
-                itemIcon.alt = item.name;
-
-                li.appendChild(itemIcon);
-                li.appendChild(document.createTextNode(item.name));
-                inventoryList.appendChild(li);
-            });
-        } else {
-            playerInventoryDiv.classList.add('hidden');
-        }
-    }
-
-    function setBackground(className) {
-        document.body.className = className;
-    }
-
-    function setFont(className) {
-        gameScreen.style.fontFamily = '';
-        gameTitle.style.fontFamily = '';
-        if (className) {
-            gameScreen.style.fontFamily = `"${className}", sans-serif`;
-            gameTitle.style.fontFamily = `"${className}", cursive`;
-        }
-    }
-
-    function typeWriterEffect(element, text, speed = 30) {
-        let i = 0;
-        element.textContent = '';
-        element.style.animation = 'typing-cursor .75s step-end infinite';
-        const typingInterval = setInterval(() => {
-            if (i < text.length) {
-                element.textContent += text.charAt(i);
-                i++;
-            } else {
-                clearInterval(typingInterval);
-                element.style.animation = '';
-            }
-        }, speed);
-    }
-
-    // --- Efeito Matrix ---
-    function startMatrixEffect() {
-        matrixCanvas.style.display = 'block';
-        matrixCanvas.width = window.innerWidth;
-        matrixCanvas.height = window.innerHeight;
-
-        const columns = Math.floor(matrixCanvas.width / 20);
-        const drops = [];
-        for (let i = 0; i < columns; i++) {
-            drops[i] = 1;
-        }
-
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
-
-            ctx.fillStyle = '#00ff99';
-            ctx.font = '15px monospace';
-
-            for (let i = 0; i < drops.length; i++) {
-                const text = String.fromCharCode(0x30A0 + Math.random() * 96);
-                ctx.fillText(text, i * 20, drops[i] * 20);
-
-                if (drops[i] * 20 > matrixCanvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-                drops[i]++;
-            }
-        }
-        matrixEffectInterval = setInterval(drawMatrix, 33);
-    }
-
-    function stopMatrixEffect() {
-        clearInterval(matrixEffectInterval);
-        matrixCanvas.style.display = 'none';
-        ctx.clearRect(0, 0, matrixCanvas.width, matrixCanvas.height);
-    }
-
-    // --- Gerenciamento de Fases ---
-    function performTransition(callback) {
-        if (!gameScreen) {
-            console.error("performTransition: gameScreen não encontrado. Pulando animação.");
-            callback();
-            return;
-        }
-
-        // Aumenta a duração da transição (2000ms = 2 segundos)
-        const transitionDuration = 2000; // Original: 800
-
-        gameScreen.style.animation = 'fade-out-content 0.75s forwards'; // Original: 0.5s
-        gameScreen.style.pointerEvents = 'none';
-
-        transitionOverlay.style.opacity = 1;
-        transitionOverlay.classList.add('glitch-active');
-        transitionOverlay.textContent = 'Realidade se distorcendo...';
-
-        setTimeout(() => {
-            callback();
-
-            transitionOverlay.classList.remove('glitch-active');
-            transitionOverlay.style.opacity = 0;
-            transitionOverlay.textContent = '';
-
-            gameScreen.style.animation = 'fade-in-content 0.75s forwards'; // Original: 0.5s
-            gameScreen.style.pointerEvents = 'auto';
-        }, transitionDuration / 2); // Metade da duração para o callback
-
-        setTimeout(() => {
-            gameScreen.style.animation = ''; // Limpa a animação CSS
-        }, transitionDuration);
-    }
-
-    function renderPhase(phase, useTransition = true) {
-        const renderPhaseContent = () => {
-            stopTimer();
-            stopMatrixEffect();
-
-            if (phase.music && currentMusic !== phase.music) {
-                playMusic(phase.music);
-            } else if (!phase.music && currentMusic) {
-                playMusic(null); // Para a música se a nova fase não tiver uma
-            }
-
-            gameTitle.textContent = phase.title;
-            const descriptionParagraph = document.createElement('p');
-            gameScreen.innerHTML = '';
-            gameScreen.appendChild(descriptionParagraph);
-            typeWriterEffect(descriptionParagraph, phase.description);
-
-
-            const optionsDiv = document.createElement('div');
-            optionsDiv.classList.add('options');
-            phase.options.forEach(option => {
-                const button = document.createElement('button');
-                button.textContent = option.text;
-                button.onclick = () => {
-                    playSound(clickSound);
-                    option.action();
-                };
-                optionsDiv.appendChild(button);
-            });
-            
-            // Adiciona opções DEPOIS que o texto da descrição terminou de digitar
-            setTimeout(() => {
-                 gameScreen.appendChild(optionsDiv);
-            }, phase.description.length * 30 + 500); // 30ms por char + 500ms de buffer
-
-            setBackground(phase.backgroundClass);
-            setFont(phase.fontClass);
-
-            if (phase.matrixEffect) {
-                startMatrixEffect();
-            }
-
-            // Exibir/Ocultar stats e inventário dependendo da fase (agora estão no HTML)
-            if (phase.showStats) {
-                statsDiv.classList.remove('hidden');
-            } else {
-                statsDiv.classList.add('hidden');
-            }
-            if (phase.showInventory) {
-                playerInventoryDiv.classList.remove('hidden');
-            } else {
-                playerInventoryDiv.classList.add('hidden');
-            }
-
-            if (phase.timerDuration > 0) {
-                startTimer(phase.timerDuration, () => {
-                    gameOver("Você não conseguiu tomar uma decisão a tempo!");
-                });
-            }
-            updateEnergy(0); // Apenas atualiza a exibição
-            updateInventoryDisplay();
-        };
-
-        if (useTransition) {
-            performTransition(renderPhaseContent);
-        } else {
-            renderPhaseContent();
-        }
-    }
-
-    // --- Handlers de Escolha ---
-
-    // Este handler agora é mais genérico, com a adição de reputação e itens.
-    function handleChoice(nextPhaseId, energyChange, scoreChange, message, reputationChange = 0, itemToAdd = null) {
-        currentPhaseId = nextPhaseId;
-        updateEnergy(energyChange);
-        rankingScore += scoreChange;
-        playerReputation += reputationChange;
-        playerReputation = Math.max(-100, Math.min(100, playerReputation)); // Garante limites
-
-        if (itemToAdd) {
-            addItemToInventory(itemToAdd);
-        }
-
-        const feedbackDiv = document.createElement('p');
-        feedbackDiv.classList.add('feedback-message');
-        feedbackDiv.textContent = message;
-        gameScreen.appendChild(feedbackDiv);
-
-        setTimeout(() => {
-            feedbackDiv.remove();
-            if (phases[currentPhaseId]) {
-                renderPhase(phases[currentPhaseId]);
-            } else {
-                checkGameEnd();
-            }
-            saveProgress(); // Salva após cada escolha
-        }, 3000);
-    }
-
-    function handleComplexChoice(nextPhaseId, actionType, energyCost, scoreChange, itemRequired, successMessage, failMessage, successEnergyChange, failEnergyChange, reputationChangeSuccess = 0, reputationChangeFail = 0, itemToAddOnSuccess = null) {
-        let success = true;
-        let message = successMessage;
-        let energyMod = successEnergyChange;
-        let currentReputationChange = reputationChangeSuccess;
-
-        if (energyCost > 0 && currentEnergy < energyCost) {
-            success = false;
-            message = "Energia insuficiente para esta ação!";
-            energyMod = 0;
-            currentReputationChange = 0;
-        } else if (itemRequired && !hasItem(itemRequired.name || itemRequired)) { // Adapta para objeto ou string
-            success = false;
-            message = `Você precisa de ${itemRequired.name || itemRequired} para fazer isso!`;
-            energyMod = 0;
-            currentReputationChange = 0;
-        } else {
-            updateEnergy(-energyCost); // Custo inicial da tentativa
-            switch (actionType) {
-                case 'hack-cabana':
-                    if (Math.random() < 0.7) {
-                        message = successMessage;
-                        energyMod = successEnergyChange;
-                        playSound(hackSuccessSound);
-                        currentReputationChange = reputationChangeSuccess;
-                    } else {
-                        success = false;
-                        message = failMessage;
-                        energyMod = failEnergyChange;
-                        playSound(hackFailSound);
-                        currentReputationChange = reputationChangeFail;
-                    }
-                    break;
-                case 'entrada-servico':
-                    // Já verificou o item acima
-                    message = successMessage;
-                    energyMod = successEnergyChange;
-                    playSound(snowWalkSound);
-                    currentReputationChange = reputationChangeSuccess;
-                    break;
-                case 'decifrar-sussurro':
-                    if (Math.random() < 0.6) {
-                        message = successMessage;
-                        energyMod = successEnergyChange;
-                        currentReputationChange = reputationChangeSuccess;
-                    } else {
-                        success = false;
-                        message = failMessage;
-                        energyMod = failEnergyChange;
-                        currentReputationChange = reputationChangeFail;
-                    }
-                    break;
-                case 'capturar-saci':
-                    if (Math.random() < 0.8) {
-                        message = successMessage;
-                        energyMod = successEnergyChange;
-                        playSound(hackSuccessSound);
-                        currentReputationChange = reputationChangeSuccess;
-                        if (itemToAddOnSuccess) addItemToInventory(itemToAddOnSuccess); // Adiciona item
-                    } else {
-                        success = false;
-                        message = failMessage;
-                        energyMod = failEnergyChange;
-                        playSound(hackFailSound);
-                        currentReputationChange = reputationChangeFail;
-                    }
-                    break;
-                case 'conectar-modulo':
-                    message = successMessage;
-                    energyMod = successEnergyChange;
-                    currentReputationChange = reputationChangeSuccess;
-                    if (itemToAddOnSuccess) addItemToInventory(itemToAddOnSuccess);
-                    break;
-                case 'resolver-enigma':
-                    if (Math.random() < 0.75) {
-                        message = successMessage;
-                        energyMod = successEnergyChange;
-                        currentReputationChange = reputationChangeSuccess;
-                    } else {
-                        success = false;
-                        message = failMessage;
-                        energyMod = failEnergyChange;
-                        currentReputationChange = reputationChangeFail;
-                    }
-                    break;
-                case 'usar-detector':
-                    message = successMessage;
-                    energyMod = successEnergyChange;
-                    currentReputationChange = reputationChangeSuccess;
-                    break;
-                case 'stealth-hack':
-                    if (Math.random() < 0.6) {
-                        message = successMessage;
-                        energyMod = successEnergyChange;
-                        currentReputationChange = reputationChangeSuccess;
-                    } else {
-                        success = false;
-                        message = failMessage;
-                        energyMod = failEnergyChange;
-                        currentReputationChange = reputationChangeFail;
-                    }
-                    break;
-                case 'final-virus':
-                    if (Math.random() < 0.9 && hasItem("Vírus Definitivo")) { // Assume sucesso alto se tiver o item
-                        message = successMessage;
-                        energyMod = successEnergyChange;
-                        currentReputationChange = reputationChangeSuccess;
-                    } else {
-                        success = false;
-                        message = failMessage;
-                        energyMod = failEnergyChange;
-                        currentReputationChange = reputationChangeFail;
-                    }
-                    break;
-            }
-        }
-
-        updateEnergy(energyMod);
-        playerReputation += currentReputationChange;
-        playerReputation = Math.max(-100, Math.min(100, playerReputation));
-
-        if (success) {
-            rankingScore += scoreChange;
-        }
-
-        const feedbackDiv = document.createElement('p');
-        feedbackDiv.classList.add('feedback-message');
-        feedbackDiv.textContent = message;
-        gameScreen.appendChild(feedbackDiv);
-
-        setTimeout(() => {
-            feedbackDiv.remove();
-            if (success && phases[nextPhaseId]) {
-                currentPhaseId = nextPhaseId;
-                renderPhase(phases[currentPhaseId]);
-            } else if (!success) {
-                if (energyMod < 0 && currentEnergy <= 0) {
-                     // Game Over já tratado
-                } else if (phases[currentPhaseId]) {
-                    renderPhase(phases[currentPhaseId]); // Permanece na fase atual em caso de falha suave
-                } else {
-                    checkGameEnd();
-                }
-            } else {
-                checkGameEnd();
-            }
-            saveProgress();
-        }, 4000);
-    }
-
-    // --- Handlers da Tela de Registro de Personagem ---
-    function handleCharacterCreation() {
-        const nameInput = document.getElementById('playerNameInput');
-        const classSelect = document.getElementById('playerClassSelect');
-
-        playerName = nameInput.value.trim();
-        playerClass = classSelect.value;
-
-        if (!playerName || !playerClass) {
-            alert('Por favor, insira seu nickname e escolha uma classe!');
-            return;
-        }
-
-        // Aplica os bônus da classe
-        const chosenClass = playerClasses[playerClass];
-        currentEnergy = chosenClass.initialEnergy;
-        playerReputation = chosenClass.initialReputation;
-        if (chosenClass.initialItem) {
-            addItemToInventory(chosenClass.initialItem);
-        }
-
-        resumeAudioContext(); // Resume o contexto de áudio na primeira interação
-        handleChoice(2, 0, 0, `Bem-vindo(a), ${playerName} (${playerClass})! Sua jornada começa agora.`, 0); // Inicia o jogo na fase 2 (antiga fase 1)
-    }
-
-    // --- Fases do Jogo ---
-    const phases = [
-        // NOVA Fase 0: Registro de Personagem
-        {
-            id: 0,
-            title: "Criação de Personagem",
-            description: "Insira seu Nickname e escolha sua especialidade hacker para iniciar sua jornada no Alasca.",
-            options: [], // As opções serão geradas dinamicamente
-            backgroundClass: "bg-fase-0",
-            fontClass: "font-typewriter",
-            matrixEffect: true,
-            timerDuration: 0,
-            music: null,
-            showStats: false, // Ocultar stats e inventário nesta fase
-            showInventory: false
-        },
-        // Antiga Fase 0 (Menu Inicial) AGORA Fase 1
-        {
-            id: 1,
-            title: "🌌 RPG Folclore Hacker - Jornada no Alasca 🌌",
-            description: "Bem-vindo(a) à sua jornada gelada. Desvende os mistérios do folclore em meio ao código e à neve. Você está pronto para começar?",
-            options: [
-                { text: "Iniciar Nova Aventura", action: () => handleMainMenuChoice('new') }, // Redireciona para a nova fase 0
-                { text: "Continuar Última Aventura", action: () => handleMainMenuChoice('continue') },
-                { text: "Ver Ranking Global", action: () => handleMainMenuChoice('ranking') } // Nova opção para o Ranking
-            ],
-            backgroundClass: "bg-fase-0",
-            fontClass: "font-pixel",
-            matrixEffect: false,
-            timerDuration: 0,
-            music: null,
-            showStats: false,
-            showInventory: false
-        },
-        // Antiga Fase 1 AGORA Fase 2
-        {
-            id: 2,
-            title: "A Chegada Gélida",
-            description: "Você aterrissa em uma remota pista de pouso no Alasca. O vento uiva, e a neve chicoteia seu rosto. Um bilhete em seu bolso diz: 'Procure a cabana mais antiga. O segredo está na rede.'",
-            options: [
-                { text: "Seguir a trilha principal", action: () => handleChoice(3, -5, 10, "Você decide seguir a trilha marcada, economizando energia.") },
-                { text: "Ativar scanner térmico", action: () => handleChoice(3, -15, 5, "Seu scanner revela uma anomalia térmica fora da trilha. Isso custa energia, mas pode ser mais rápido.") }
-            ],
-            backgroundClass: "bg-fase-1",
-            fontClass: "font-typewriter",
-            matrixEffect: true,
-            timerDuration: 60,
-            music: ambientSound,
-            showStats: true,
-            showInventory: true
-        },
-        // Restante das fases (3 a 12) já ajustadas para os novos IDs
-        // Fase 3: Floresta Sombria e Gélida (antiga 2)
-        {
-            id: 3,
-            title: "Floresta Sombria e Gélida",
-            description: "A trilha se adentra em uma floresta densa e escura. As árvores cobertas de neve parecem figuras fantasmagóricas. Você ouve um sussurro distante, quase como um código binário se misturando ao vento.",
-            options: [
-                { text: "Ignorar e seguir em frente", action: () => handleChoice(4, -10, 15, "Você persiste, mas a sensação de ser observado aumenta.") },
-                { text: "Tentar decifrar o sussurro", action: () => handleComplexChoice(4, 'decifrar-sussurro', 10, 25, null, "Você capta uma sequência: '01001000 01100001 01100011 01101011'. É uma pista!", "Você tenta decifrar, mas a interferência é muito forte e gasta energia.", -10, 0, -5, 5, -5) }
-            ],
-            backgroundClass: "bg-fase-2",
-            fontClass: "font-typewriter",
-            matrixEffect: true,
-            timerDuration: 90,
-            music: fase2Music,
-            showStats: true,
-            showInventory: true
-        },
-        // Fase 4: A Cabana Antiga (com hack) - antiga 3
-        {
-            id: 4,
-            title: "A Cabana Antiga",
-            description: "Você encontra uma cabana isolada, coberta por neve. Há um brilho fraco vindo de uma janela. Parece abandonada, mas a porta tem um teclado de segurança antigo. Você tenta uma abordagem hacker.",
-            options: [
-                { text: "Forçar a entrada (gasta energia)", action: () => handleChoice(5, -20, 5, "Você tenta arrombar, mas o frio torna seus movimentos lentos. A porta não cede.", -10) },
-                { text: "Tentar hackear o teclado", action: () => handleComplexChoice(5, 'hack-cabana', 25, 50, null, "Acesso concedido! O teclado pisca em verde e a porta range. Você é bom nisso!", "Falha no hack. O sistema se tranca, e um alarme silencioso é ativado. Isso chamará atenção!", -10, -20, 15, -15) }
-            ],
-            backgroundClass: "bg-fase-3",
-            fontClass: "font-typewriter",
-            matrixEffect: true,
-            timerDuration: 120,
-            music: suspenseMusic,
-            showStats: true,
-            showInventory: true
-        },
-        // Fase 5: O Encontro com o "Homem da Neve" (Saci) - antiga 4
-        {
-            id: 5,
-            title: "O Vulto na Neve",
-            description: "Dentro da cabana, há equipamentos antigos e um cheiro forte de fumaça. De repente, um vulto pequeno e ágil com um gorro vermelho passa voando. É o 'Homem da Neve', uma lenda local que rouba bits de dados!",
-            options: [
-                { text: "Tentar capturar o vulto", action: () => handleComplexChoice(6, 'capturar-saci', 30, 75, {name: "Rede de Captura Óptica", icon: "images/icon_net.png"}, "Você lança sua rede óptica e captura o Vulto! Ele deixa cair um 'Módulo de Dados Encriptado'.", "O vulto é muito rápido e desaparece na neve, zombando de você. (-15 energia)", -10, -15, 20, -5, {name: "Módulo de Dados Encriptado", icon: "images/icon_data.png"}) },
-                { text: "Instalar um rastreador de IP", action: () => handleChoice(6, -15, 20, "Você instala um rastreador. Pode não pegar o vulto, mas talvez revele seu destino.", -5) }
-            ],
-            backgroundClass: "bg-fase-4",
-            fontClass: "font-pixel",
-            matrixEffect: true,
-            timerDuration: 90,
-            music: ambientSound,
-            showStats: true,
-            showInventory: true
-        },
-        // Fase 6: Base Militar Abandonada - antiga 5
-        {
-            id: 6,
-            title: "Base Militar Abandonada",
-            description: "Seu rastreador de IP (ou a trilha do Vulto) te leva a uma antiga base militar soviética, semi-enterrada na neve. Há uma porta de serviço com um selo de segurança que parece impossível de hackear sem uma chave física.",
-            options: [
-                { text: "Procurar por uma entrada alternativa", action: () => handleChoice(7, -20, 30, "Você encontra um duto de ventilação, mas está parcialmente bloqueado. (-20 energia)", 5) },
-                { text: "Tentar entrada de serviço com Chave Mestra", action: () => handleComplexChoice(7, 'entrada-servico', 10, 100, {name: "Chave Mestra Universal", icon: "images/icon_key.png"}, "A Chave Mestra Universal se encaixa perfeitamente! A porta se abre com um assobio metálico. (Item usado)", "A porta está trancada, você precisa de uma Chave Mestra Universal para abrir. (-5 energia)", 0, -5, 10, -10) }
-            ],
-            backgroundClass: "bg-fase-5",
-            fontClass: "font-typewriter",
-            matrixEffect: true,
-            timerDuration: 100,
-            music: ambientSound,
-            showStats: true,
-            showInventory: true
-        },
-        // Fase 7: Laboratório Subterrâneo - antiga 6
-        {
-            id: 7,
-            title: "Laboratório Subterrâneo",
-            description: "Os corredores escuros da base levam a um laboratório bizarro. Telas piscam com diagramas de circuitos e símbolos antigos. No centro, um dispositivo estranho pulsa com energia mística e digital. O 'Módulo de Dados Encriptado' que você pegou do Vulto começa a vibrar.",
-            options: [
-                { text: "Conectar o Módulo de Dados ao dispositivo", action: () => handleComplexChoice(8, 'conectar-modulo', 15, 150, {name: "Módulo de Dados Encriptado", icon: "images/icon_data.png"}, "O dispositivo absorve o módulo, revelando projeções de seres folclóricos controlando redes. Você entende tudo! (Item usado) Um 'Vírus Definitivo' é baixado.", "O dispositivo rejeita o módulo, causando um curto-circuito e liberando uma descarga elétrica. (-30 energia)", -10, -30, 20, -10, {name: "Vírus Definitivo", icon: "images/icon_virus.png"}) },
-                { text: "Analisar o dispositivo com seu óculos de Raio-X", action: () => handleChoice(8, -10, 50, "A análise revela que o dispositivo está sincronizando as lendas com a rede global. Isso é maior do que você pensava!", 5) }
-            ],
-            backgroundClass: "bg-fase-6",
-            fontClass: "font-pixel",
-            matrixEffect: true,
-            timerDuration: 120,
-            music: ambientSound,
-            showStats: true,
-            showInventory: true
-        },
-        // Fase 8: O Enigma da Curupira Hacker - antiga 7
-        {
-            id: 8,
-            title: "O Enigma da Curupira Hacker",
-            description: "De repente, as telas do laboratório mudam. Uma imagem distorcida de uma criatura com pés virados para trás aparece. É a Curupira, mas seus olhos brilham com código binário. Ela te desafia com um enigma para acessar a próxima rede.",
-            options: [
-                { text: "Tentar resolver o enigma (lógica)", action: () => handleComplexChoice(9, 'resolver-enigma', 20, 100, null, "Você decifra a charada! A Curupira sorri digitalmente e abre um portal de dados. (+50 energia)", "Você falha. A Curupira te redireciona para um loop infinito de anúncios pop-up! (-25 energia)", 50, -25, 25, -20) },
-                { text: "Atacar o sistema da Curupira", action: () => handleChoice(9, -40, 0, "Seu ataque é ineficaz. A Curupira se dissipa em pixels, e você perde tempo e energia.", -10) }
-            ],
-            backgroundClass: "bg-fase-7",
-            fontClass: "font-typewriter",
-            matrixEffect: true,
-            timerDuration: 100,
-            music: ambientSound,
-            showStats: true,
-            showInventory: true
-        },
-        // Fase 9: A Realidade Distorcida (Boto) - antiga 8
-        {
-            id: 9,
-            title: "A Realidade Distorcida",
-            description: "O portal da Curupira te leva a uma dimensão onde a realidade se distorce. Você está em um rio congelado, mas vê um vulto de um homem elegante com um chapéu, que se transforma em um golfinho cor-de-rosa digitalizado. É o Boto Hacker, mestre das ilusões e da camuflagem na rede.",
-            options: [
-                { text: "Aceitar a ilusão e buscar uma saída", action: () => handleChoice(10, -10, 30, "Você tenta entender a lógica da ilusão, buscando uma falha na sua programação.", 10) },
-                { text: "Usar 'Detector de Ilusões Digitais'", action: () => handleComplexChoice(10, 'usar-detector', 20, 120, {name: "Detector de Ilusões Digitais", icon: "images/icon_detector.png"}, "O detector revela uma porta oculta na paisagem distorcida. A ilusão se desfaz. (Item usado)", "O detector falha em meio a tanta distorção, deixando você desorientado. (-20 energia)", 0, -20, -5, 0) }
-            ],
-            backgroundClass: "bg-fase-8",
-            fontClass: "font-pixel",
-            matrixEffect: true,
-            timerDuration: 90,
-            music: ambientSound,
-            showStats: true,
-            showInventory: true
-        },
-        // Fase 10: A Fortaleza do Gelo (Cuca) - antiga 9
-        {
-            id: 10,
-            title: "A Fortaleza do Gelo",
-            description: "Você chega a uma imponente fortaleza feita de gelo e circuitaria, flutuando em um abismo digital. Luzes estroboscópicas brilham em sincronia com batidas pesadas. Esta é a base da Cuca Hacker, a arquiteta de toda a rede folclórica.",
-            options: [
-                { text: "Entrar furtivamente (stealth hack)", action: () => handleComplexChoice(11, 'stealth-hack', 30, 150, null, "Você desativa as sentinelas digitais e entra sem ser detectado. (+70 energia)", "Você aciona um alarme sonoro! Sentinelas são ativadas. (-40 energia)", 70, -40, 20, -10) },
-                { text: "Atacar diretamente o firewall", action: () => handleChoice(11, -50, 50, "Você lança um ataque DDoS massivo, mas o firewall da Cuca é robusto e revida com força total.", -15) }
-            ],
-            backgroundClass: "bg-fase-9",
-            fontClass: "font-typewriter",
-            matrixEffect: true,
-            timerDuration: 120,
-            music: bossMusic,
-            showStats: true,
-            showInventory: true
-        },
-        // Fase 11: O Chefão Final (Cuca) - antiga 10
-        {
-            id: 11,
-            title: "Cuca: O Núcleo do Folclore Digital",
-            description: "No coração da fortaleza, a Cuca surge. Não como uma bruxa, mas como uma inteligência artificial colossal, tecendo o folclore na rede global. Ela é a fusão de todas as lendas, protegendo o 'Núcleo Folclórico'. Prepare-se para a batalha final de código e vontade.",
-            options: [
-                { text: "Lançar vírus definitivo", action: () => handleComplexChoice(12, 'final-virus', 50, 200, {name: "Vírus Definitivo", icon: "images/icon_virus.png"}, "Seu vírus corrompe o Núcleo Folclórico! A Cuca se desfaz em uma cascata de bits de luz. Vitória!", "O vírus é neutralizado! A Cuca te sobrecarrega com um ataque de negação de serviço. (-50 energia, Game Over)", 0, -50, 10, -30) },
-                { text: "Tentar negociar (persuasão)", action: () => handleChoice(12, -30, 100, "Você tenta persuadir a Cuca a liberar o folclore. Ela hesita, mas sua programação a impede. Ela ataca!", 20) }
-            ],
-            backgroundClass: "bg-fase-final",
-            fontClass: "font-pixel",
-            matrixEffect: true,
-            timerDuration: 150,
-            music: bossMusic,
-            showStats: true,
-            showInventory: true
-        },
-        // Fase 12 (Será a nova fase final de vitória ou Game Over)
-        // A lógica de múltiplos finais será expandida aqui em etapas futuras.
-        {
-            id: 12,
-            title: "Fim da Jornada",
-            description: "A aventura chegou ao seu clímax. O que acontecerá agora?",
-            options: [
-                // Será preenchido pela função checkGameEnd
-            ],
-            backgroundClass: "bg-fase-final",
-            fontClass: "font-pixel",
-            matrixEffect: false,
-            timerDuration: 0,
-            music: null,
-            showStats: false,
-            showInventory: false
-        }
-    ];
-
-    // --- Telas de Fim de Jogo ---
-    function gameOver(message) {
-        stopTimer();
-        stopMatrixEffect();
-        playMusic(null);
-        playSound(alertSound);
-
-        gameScreen.innerHTML = `<h2>GAME OVER!</h2><p>${message}</p><p>Sua jornada termina aqui, Hacker ${playerName}.</p><button id="restartButton">Reiniciar Jogo</button>`;
-        setBackground("bg-game-over");
-        gameTitle.textContent = "Fim da Linha";
-        statsDiv.classList.add('hidden');
-        playerInventoryDiv.classList.add('hidden');
-
-        document.getElementById('restartButton').onclick = restartGame;
-    }
-
-    function showVictoryScreen() {
-        stopTimer();
-        stopMatrixEffect();
-        playMusic(null);
-
-        const finalRank = calculateRanking();
-
-        gameScreen.innerHTML = `<h2>VITÓRIA!</h2>
-                               <p>Parabéns, ${playerName}! Você desvendou os mistérios do Alasca e salvou o Folclore Digital!</p>
-                               <p>Sua pontuação final: <span class="score">${rankingScore}</span></p>
-                               <p>Seu Ranking: <span class="score">${finalRank}</span></p>
-                               <button id="restartButton">Jogar Novamente</button>`;
-        setBackground("bg-victory");
-        gameTitle.textContent = "Jornada Concluída!";
-        statsDiv.classList.add('hidden');
-        playerInventoryDiv.classList.add('hidden');
-
-        document.getElementById('restartButton').onclick = restartGame;
-    }
-
-    // A função checkGameEnd será expandida para múltiplos finais no próximo passo
-    function checkGameEnd() {
-        if (currentPhaseId >= phases.length - 1) { // -1 porque a última fase é a 12, que é o "fim"
-            showVictoryScreen(); // Por enquanto, sempre vitória ao chegar ao fim
-        } else if (currentEnergy <= 0) {
-            gameOver("Sua energia se esgotou completamente!");
-        }
-        // Futuramente, aqui será a lógica para múltiplos finais baseados em reputação, itens, etc.
-    }
-
-
-    function calculateRanking() {
-        let rankBonus = 0;
-        if (playerReputation > 50) rankBonus = 100;
-        else if (playerReputation < -50) rankBonus = -50;
-
-        const finalScore = rankingScore + rankBonus;
-
-        if (finalScore >= 1000) return "S+ (Lenda Hacker)";
-        if (finalScore >= 800) return "S (Mestre Digital)";
-        if (finalScore >= 600) return "A (Cientista de Dados)";
-        if (finalScore >= 400) return "B (Codificador Experiente)";
-        if (finalScore >= 200) return "C (Novato Curioso)";
-        return "D (Aprendiz Hacker)";
-    }
-
-    // --- Nova Função para Mostrar Tela de Ranking ---
-    function showRankingScreen() {
-        stopTimer();
-        stopMatrixEffect();
-        playMusic(null); // Sem música específica para o ranking por enquanto
-
-        gameTitle.textContent = "Ranking Global dos Hackers";
-        setBackground("bg-ranking"); // Nova classe de fundo para o ranking
-
-        // Placeholder para o ranking, será preenchido de verdade na próxima etapa
-        gameScreen.innerHTML = `
-            <h2>Melhores Hackers</h2>
-            <p>Este ranking será preenchido em breve!</p>
-            <ul id="highScoresList">
-                <li>1. Top Hacker - 1500pts</li>
-                <li>2. Cyber Mestre - 1200pts</li>
-                <li>3. Anon Codificador - 900pts</li>
-            </ul>
-            <button id="backToMenuButton">Voltar ao Menu Principal</button>
-        `;
-        document.getElementById('backToMenuButton').onclick = initializeGame; // Volta para o menu principal
-
-        statsDiv.classList.add('hidden');
-        playerInventoryDiv.classList.add('hidden');
-    }
-
-    function restartGame() {
-        currentEnergy = 100;
-        currentPhaseId = 0; // Volta para a tela de criação de personagem
-        playerInventory = [];
-        rankingScore = 0;
-        difficultyMultiplier = 1;
-        playerReputation = 0;
-        playerName = '';
-        playerClass = '';
-
-        stopTimer();
-        stopMatrixEffect();
-        playMusic(null);
-
-        document.body.className = '';
-
-        initializeGame(); // Reinicia o fluxo do jogo desde a criação de personagem
-    }
-
-    // --- Funções de Salvar/Carregar Progresso (LocalStorage) ---
-    function saveProgress() {
-        const gameState = {
-            currentEnergy,
-            currentPhaseId,
-            playerInventory,
-            rankingScore,
-            playerReputation,
-            playerName, // Salva o nome
-            playerClass // Salva a classe
-        };
-        localStorage.setItem('rpgFolcloreHackerState', JSON.stringify(gameState));
-        console.log("Progresso salvo!");
-    }
-
-    function loadProgress() {
-        const savedState = localStorage.getItem('rpgFolcloreHackerState');
-        if (savedState) {
-            const gameState = JSON.parse(savedState);
-            currentEnergy = gameState.currentEnergy;
-            currentPhaseId = gameState.currentPhaseId;
-            playerInventory = gameState.playerInventory || [];
-            rankingScore = gameState.rankingScore;
-            playerReputation = gameState.playerReputation || 0;
-            playerName = gameState.playerName || ''; // Carrega o nome
-            playerClass = gameState.playerClass || ''; // Carrega a classe
-
-            updateEnergy(0);
-            updateInventoryDisplay();
-            // Inicia o jogo na fase carregada (com transição)
-            renderPhase(phases[currentPhaseId]);
-            resumeAudioContext(); // Garante que o áudio seja resumido
-            console.log("Progresso carregado!");
-            return true;
-        }
-        console.log("Nenhum progresso salvo encontrado.");
-        alert("Nenhum progresso salvo encontrado. Iniciando nova aventura!");
-        initializeGame(); // Inicia uma nova aventura se não houver save
-        return false;
-    }
-
-    // --- Inicialização do Jogo ---
-    function initializeGame() {
-        // Redireciona para a Fase 1 (o novo menu principal)
-        renderPhase(phases[1], false); // Menu principal não tem transição inicial
-    }
-
-    // Função para renderizar a tela de criação de personagem (nova Fase 0)
-    function renderCharacterCreationScreen() {
-        stopTimer();
-        stopMatrixEffect();
-        playMusic(null); // Garante que nenhuma música toque aqui
-
-        gameTitle.textContent = phases[0].title;
-        setBackground(phases[0].backgroundClass);
-        setFont(phases[0].fontClass);
-        if (phases[0].matrixEffect) startMatrixEffect();
-
-        const descriptionParagraph = document.createElement('p');
-        gameScreen.innerHTML = '';
-        gameScreen.appendChild(descriptionParagraph);
-        typeWriterEffect(descriptionParagraph, phases[0].description);
-
-        // Cria os elementos de input e select
-        const optionsDiv = document.createElement('div');
-        optionsDiv.classList.add('options');
-        
-        const nameLabel = document.createElement('label');
-        nameLabel.textContent = 'Nickname:';
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.id = 'playerNameInput';
-        nameInput.placeholder = 'Digite seu nome de Hacker';
-        nameInput.maxLength = 15; // Limite de caracteres para nickname
-        optionsDiv.appendChild(nameLabel);
-        optionsDiv.appendChild(nameInput);
-
-        const classLabel = document.createElement('label');
-        classLabel.textContent = 'Classe:';
-        const classSelect = document.createElement('select');
-        classSelect.id = 'playerClassSelect';
-        
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = 'Escolha sua classe...';
-        defaultOption.disabled = true;
-        defaultOption.selected = true;
-        classSelect.appendChild(defaultOption);
-
-        for (const className in playerClasses) {
-            const option = document.createElement('option');
-            option.value = className;
-            option.textContent = `${className} - ${playerClasses[className].description}`;
-            classSelect.appendChild(option);
-        }
-        optionsDiv.appendChild(classLabel);
-        optionsDiv.appendChild(classSelect);
-
-        const startButton = document.createElement('button');
-        startButton.textContent = 'Começar Aventura!';
-        startButton.onclick = handleCharacterCreation;
-        optionsDiv.appendChild(startButton);
-
-        setTimeout(() => {
-            gameScreen.appendChild(optionsDiv);
-        }, phases[0].description.length * 30 + 500);
-
-        statsDiv.classList.add('hidden');
-        playerInventoryDiv.classList.add('hidden');
-    }
-
-    // Adapta o handler da Fase 1 para iniciar a criação de personagem ou carregar
-    function handleMainMenuChoice(choiceType) {
-        if (choiceType === 'new') {
-            renderCharacterCreationScreen(); // Vai para a nova tela de criação
-        } else if (choiceType === 'continue') {
-            loadProgress(); // Tenta carregar
-        } else if (choiceType === 'ranking') {
-            showRankingScreen(); // Mostra o ranking
-        }
-    }
-
-
-    // Inicia o jogo no menu principal (fase 1)
-    initializeGame();
 });
+setInterval(drawMatrix, 35);
+// --- Fim Efeito Matrix ---
+
+// Função para tocar som de clique
+function playClickSound() {
+    clickSound.currentTime = 0;
+    clickSound.play();
+}
+
+// Função para atualizar a HUD (Heads-Up Display)
+function atualizarHUD() {
+    energiaValue.textContent = energia;
+    energiaFill.style.width = `${energia}%`;
+    reputacaoValue.textContent = reputacao;
+
+    if (energia <= 0) {
+        gameOver("Sua energia se esgotou. Você não conseguiu sobreviver ao Alasca digital.");
+        return;
+    }
+
+    inventarioList.innerHTML = '';
+    if (inventario.length === 0) {
+        inventarioList.innerHTML = '<li>Vazio</li>';
+    } else {
+        inventario.forEach(item => {
+            const li = document.createElement('li');
+            li.textContent = item;
+            inventarioList.appendChild(li);
+        });
+    }
+}
+
+// Função para adicionar item ao inventário
+function adicionarItemInventario(item) {
+    if (!inventario.includes(item)) { // Evita itens duplicados
+        inventario.push(item);
+        atualizarHUD();
+        exibirMensagem(`Você adicionou "${item}" ao seu inventário!`, 'info');
+    } else {
+        exibirMensagem(`Você já tem "${item}" no seu inventário.`, 'normal');
+    }
+}
+
+// Função para exibir mensagens na tela (com tempo de transição)
+function exibirMensagem(mensagem, tipo = 'normal') {
+    const mensagemDiv = document.createElement('div');
+    mensagemDiv.className = `mensagem ${tipo}`;
+    mensagemDiv.textContent = mensagem;
+    gameScreen.appendChild(mensagemDiv);
+
+    setTimeout(() => {
+        mensagemDiv.style.opacity = '0';
+        mensagemDiv.style.transition = 'opacity 1s ease-out';
+        setTimeout(() => {
+            mensagemDiv.remove();
+        }, 1000);
+    }, 3000);
+}
+
+// Função de transição para a próxima fase
+function irParaFase(proximaFase, delay = 1500) { // Aumenta o delay padrão
+    playClickSound();
+    gameScreen.style.opacity = '0';
+    gameScreen.style.transition = 'opacity 1.5s ease-in-out';
+
+    setTimeout(() => {
+        gameScreen.innerHTML = '';
+        faseAtual = proximaFase;
+        renderizarFase(faseAtual);
+        gameScreen.style.opacity = '1';
+        gameScreen.style.transition = 'opacity 1.5s ease-in-out';
+        atualizarHUD();
+    }, delay);
+}
+
+// Função para exibir escolhas ao jogador
+function exibirEscolhas(opcoes) {
+    opcoes.forEach(opcao => {
+        const button = document.createElement('button');
+        button.textContent = opcao.texto;
+        button.onclick = () => {
+            playClickSound();
+            opcao.acao();
+            // Não limpar gameScreen imediatamente para permitir mensagens antes da transição
+        };
+        gameScreen.appendChild(button);
+    });
+}
+
+// Função para limpar o conteúdo da tela de jogo
+function limparGameScreen() {
+    gameScreen.innerHTML = '';
+}
+
+// Função de Game Over
+function gameOver(mensagem) {
+    clearInterval(temporizador); // Garante que qualquer temporizador seja parado
+    gameScreen.innerHTML = `
+        <p class="game-over-text">${mensagem}</p>
+        <button onclick="reiniciarJogo()">Reiniciar Jogo</button>
+    `;
+    gameScreen.style.backgroundImage = 'none';
+    ambientSound.pause();
+    alertSound.play();
+    hud.style.display = 'none';
+    inventarioContainer.style.display = 'none'; // Esconde inventário
+    regrasObjetivosMissoesContainer.style.display = 'none'; // Esconde regras
+}
+
+// Função para reiniciar o jogo
+function reiniciarJogo() {
+    playClickSound();
+    energia = 100;
+    reputacao = 0;
+    faseAtual = 0;
+    escolhasFeitas = {};
+    inventario = [];
+    player = { nickname: '', classe: '', altura: '' };
+    gameScreen.innerHTML = '';
+    hud.style.display = 'none';
+    inventarioContainer.style.display = 'none';
+    regrasObjetivosMissoesContainer.style.display = 'none';
+    ambientSound.pause();
+    ambientSound.currentTime = 0;
+    iniciarJogo();
+}
+
+// --- Telas Específicas do Jogo ---
+
+// Fase 0: Criação de Personagem
+function renderizarCriacaoPersonagem() {
+    gameTitle.textContent = 'Crie Seu Personagem Hacker';
+    gameScreen.style.backgroundImage = 'none'; // Sem imagem de fundo específica aqui
+    hud.style.display = 'none'; // HUD escondida
+    inventarioContainer.style.display = 'none';
+    regrasObjetivosMissoesContainer.style.display = 'none';
+
+    gameScreen.innerHTML = `
+        <p>Prepare-se para a Jornada no Alasca Digital!</p>
+        <label for="nicknameInput">Nickname:</label>
+        <input type="text" id="nicknameInput" placeholder="Seu nome de hacker" maxlength="15" required><br>
+
+        <label for="classeSelect">Classe:</label>
+        <select id="classeSelect">
+            <option value="Hacker de Infiltração">Hacker de Infiltração</option>
+            <option value="Hacker de Dados">Hacker de Dados</option>
+            <option value="Hacker de Suporte">Hacker de Suporte</option>
+            <option value="Hacker de Defesa">Hacker de Defesa</option>
+        </select><br>
+
+        <label for="alturaInput">Altura (cm):</label>
+        <input type="number" id="alturaInput" placeholder="Ex: 175" min="100" max="250" required><br>
+
+        <button id="iniciarAventuraBtn">Iniciar Aventura</button>
+    `;
+
+    document.getElementById('iniciarAventuraBtn').onclick = () => {
+        const nickname = document.getElementById('nicknameInput').value;
+        const classe = document.getElementById('classeSelect').value;
+        const altura = document.getElementById('alturaInput').value;
+
+        if (nickname.trim() === '' || altura.trim() === '') {
+            exibirMensagem('Por favor, preencha todos os campos.', 'alert');
+            return;
+        }
+
+        player.nickname = nickname;
+        player.classe = classe;
+        player.altura = altura;
+
+        exibirMensagem(`Bem-vindo(a), ${player.nickname} (${player.classe})!`, 'info');
+        irParaFase(1); // Vai para a fase do menu principal
+    };
+}
+
+// Fase 1: Menu Principal
+function renderizarMenuPrincipal() {
+    gameTitle.textContent = '🌌 Menu Principal 🌌';
+    gameScreen.style.backgroundImage = 'url("https://as2.ftcdn.net/v2/jpg/05/27/76/89/1000_F_527768925_kGqX2i9xU1j7pL9022G18bM6xX0Y1Y1q.jpg")'; // Exemplo de fundo
+    hud.style.display = 'none'; // Esconde a HUD no menu
+    inventarioContainer.style.display = 'none';
+    regrasObjetivosMissoesContainer.style.display = 'none';
+
+    gameScreen.innerHTML = `
+        <p>Bem-vindo(a) ao RPG Folclore Hacker - Jornada no Alasca!</p>
+        <button onclick="irParaFase(2)">Nova Aventura</button>
+        <button onclick="exibirRegrasObjetivosMissoes()">Regras, Objetivos e Missões</button>
+        <button onclick="exibirMensagem('Funcionalidade ainda não implementada.', 'info')">Continuar</button>
+        <button onclick="exibirMensagem('Funcionalidade ainda não implementada.', 'info')">Ranking</button>
+    `;
+    ambientSound.play();
+}
+
+function exibirRegrasObjetivosMissoes() {
+    gameTitle.textContent = 'Informações do Jogo';
+    gameScreen.innerHTML = ''; // Limpa a tela de jogo
+    hud.style.display = 'none'; // Garante que a HUD esteja escondida
+    inventarioContainer.style.display = 'none';
+    gameScreen.style.backgroundImage = 'none'; // Sem fundo para a tela de regras
+
+    regrasObjetivosMissoesContainer.style.display = 'block';
+
+    regrasContent.innerHTML = `
+        <h4>Regras Básicas:</h4>
+        <ul>
+            <li>Gerencie sua energia: Cuidado com suas ações, pois algumas as diminuem.</li>
+            <li>Suas escolhas importam: Elas afetarão sua reputação e o desenrolar da história.</li>
+            <li>Resolva enigmas: Decifre códigos e charadas para avançar.</li>
+            <li>Coleta itens: Seu inventário será útil em momentos chave.</li>
+        </ul>
+    `;
+    objetivosContent.innerHTML = `
+        <h4>Objetivo Principal:</h4>
+        <p>Desvendar o mistério do desaparecimento dos dados cruciais do Folclore Digital no Alasca e expor o responsável!</p>
+    `;
+    missoesContent.innerHTML = `
+        <h4>Missões Atuais:</h4>
+        <p>A cada fase, uma nova missão se revela. Fique atento(a)!</p>
+        <ul>
+            <li>**Fase 2:** Encontrar a cabana antiga para iniciar sua investigação.</li>
+            <li>**Fase 3:** Decifrar a mensagem oculta na floresta.</li>
+            <li>**Fase 4:** Invadir a cabana para coletar pistas.</li>
+            <li>...e muitos outros mistérios!</li>
+        </ul>
+    `;
+
+    // Remove botões antigos e adiciona o de voltar
+    const oldBackButton = regrasObjetivosMissoesContainer.querySelector('button');
+    if (oldBackButton) oldBackButton.remove();
+
+    const backButton = document.createElement('button');
+    backButton.textContent = 'Voltar ao Menu';
+    backButton.onclick = () => {
+        regrasObjetivosMissoesContainer.style.display = 'none';
+        renderizarMenuPrincipal();
+    };
+    regrasObjetivosMissoesContainer.appendChild(backButton);
+}
+
+// Fase 2: A Chegada Gélida (com enigma)
+function renderizarFase2() {
+    gameTitle.textContent = 'Fase 2: A Chegada Gélida';
+    gameScreen.style.backgroundImage = 'url("https://as1.ftcdn.net/v2/jpg/05/80/25/80/1000_F_580258064_60q4v3fV7uY0L0A6h2p9kXqJ8J0X0D1v.jpg")';
+    hud.style.display = 'block'; // Mostra a HUD
+    inventarioContainer.style.display = 'block'; // Mostra o inventário
+
+    gameScreen.innerHTML = `
+        <p>Você aterrissou em uma clareira isolada no coração do Alasca. O frio é intenso, e a neve cobre tudo. No seu bolso, você encontra um bilhete enigmático.</p>
+        <p><b>Bilhete:</b> "No gelo onde sussurros ecoam, a **cabana antiga** guarda o segredo. A rede te espera, mas o tempo é curto."</p>
+        <p>O que você faz?</p>
+    `;
+    exibirEscolhas([
+        {
+            texto: 'Tentar decifrar o bilhete.',
+            acao: () => {
+                const resposta = prompt('Qual a palavra-chave que indica o seu destino? (Duas palavras)').toLowerCase();
+                if (resposta === 'cabana antiga') {
+                    exibirMensagem('Correto! Você sabe onde ir. (+5 Reputação)', 'success');
+                    reputacao += 5;
+                    adicionarItemInventario('Bilhete Decifrado');
+                    irParaFase(3);
+                } else {
+                    exibirMensagem('Incorreto. Você perde tempo e energia tentando entender. (-10 Energia)', 'alert');
+                    energia -= 10;
+                    atualizarHUD();
+                    // Permite tentar novamente ou forçar a próxima fase
+                    exibirEscolhas([
+                         { texto: 'Tentar novamente', acao: () => renderizarFase2() },
+                         { texto: 'Ignorar e seguir em frente', acao: () => { exibirMensagem('Você decide ignorar o enigma e seguir em frente.', 'normal'); irParaFase(3); } }
+                    ]);
+                }
+            }
+        },
+        {
+            texto: 'Ignorar o bilhete e seguir em frente aleatoriamente. (-20 Energia)',
+            acao: () => {
+                energia -= 20;
+                exibirMensagem('Você se aventura sem rumo e gasta muita energia.', 'alert');
+                atualizarHUD();
+                irParaFase(3);
+            }
+        }
+    ]);
+}
+
+// Fase 3: Floresta Sombria e Gélida (com enigma binário)
+function renderizarFase3() {
+    gameTitle.textContent = 'Fase 3: Floresta Sombria e Gélida';
+    gameScreen.style.backgroundImage = 'url("https://as2.ftcdn.net/v2/jpg/06/71/53/80/1000_F_671538026_wWlC6y0Uq8tG0N9zC7b4HwP0jB5E3L2e.jpg")';
+    hud.style.display = 'block';
+    inventarioContainer.style.display = 'block';
+
+    gameScreen.innerHTML = `
+        <p>Você adentra uma floresta densa. O ar é pesado e um sussurro gélido parece vir de todas as direções. Você percebe que o sussurro é, na verdade, uma sequência binária que se repete.</p>
+        <p><b>Sussurro:</b> "01001000 01100001 01100011 01101011"</p>
+        <p>O que você faz?</p>
+    `;
+    exibirEscolhas([
+        {
+            texto: 'Tentar decifrar o código binário.',
+            acao: () => {
+                const resposta = prompt('Qual a palavra em texto que o código binário revela? (Uma palavra)').toLowerCase();
+                if (resposta === 'hack') {
+                    exibirMensagem('Bingo! A palavra é "Hack". Você sentiu uma conexão estranha com a rede local. (+5 Reputação)', 'success');
+                    reputacao += 5;
+                    adicionarItemInventario('Mensagem "Hack" Decifrada');
+                    irParaFase(4);
+                } else {
+                    exibirMensagem('Você falha em decifrar. O sussurro parece zombeteiro. (-15 Energia)', 'alert');
+                    energia -= 15;
+                    atualizarHUD();
+                    // Permite tentar novamente ou forçar a próxima fase
+                    exibirEscolhas([
+                        { texto: 'Tentar novamente', acao: () => renderizarFase3() },
+                        { texto: 'Ignorar e seguir em frente', acao: () => { exibirMensagem('Você decide ignorar o enigma e seguir em frente.', 'normal'); irParaFase(4); } }
+                    ]);
+                }
+            }
+        },
+        {
+            texto: 'Ignorar o sussurro e buscar a cabana.',
+            acao: () => {
+                exibirMensagem('Você decide ignorar o sussurro, mas sente que perdeu algo importante.', 'normal');
+                irParaFase(4);
+            }
+        }
+    ]);
+}
+
+// Fase 4: A Cabana Antiga (com enigma do teclado)
+function renderizarFase4() {
+    gameTitle.textContent = 'Fase 4: A Cabana Antiga';
+    gameScreen.style.backgroundImage = 'url("https://as1.ftcdn.net/v2/jpg/06/77/39/63/1000_F_677396342_uG60FkY0vFf9c9J2h6y6sV4c7t2E3w0d.jpg")';
+    hud.style.display = 'block';
+    inventarioContainer.style.display = 'block';
+
+    gameScreen.innerHTML = `
+        <p>Você finalmente encontra a cabana antiga. A porta principal tem um teclado digital com uma sequência de números piscando: <b>1, 2, 4, 7, 11, ?</b></p>
+        <p>O que você faz?</p>
+    `;
+
+    exibirEscolhas([
+        {
+            texto: 'Tentar inserir o próximo número na sequência.',
+            acao: () => {
+                const resposta = prompt('Qual é o próximo número na sequência?').trim();
+                // A sequência é 1 (+1) 2 (+2) 4 (+3) 7 (+4) 11 (+5) 16
+                if (resposta === '16') {
+                    exibirMensagem('A porta se abre com um clique suave. Você conseguiu! (+10 Reputação)', 'success');
+                    reputacao += 10;
+                    irParaFase(5);
+                } else {
+                    exibirMensagem('O alarme silencioso da cabana é ativado por um instante. Você perde energia. (-20 Energia)', 'alert');
+                    energia -= 20;
+                    atualizarHUD();
+                    // Permite tentar novamente ou forçar a próxima fase
+                    exibirEscolhas([
+                        { texto: 'Tentar novamente', acao: () => renderizarFase4() },
+                        { texto: 'Tentar forçar a entrada pela janela dos fundos. (-30 Energia)', acao: () => {
+                            energia -= 30;
+                            exibirMensagem('A janela range e você faz barulho, mas consegue entrar. Você perdeu bastante energia na tentativa.', 'alert');
+                            atualizarHUD();
+                            irParaFase(5);
+                        }}
+                    ]);
+                }
+            }
+        },
+        {
+            texto: 'Tentar forçar a entrada pela janela dos fundos. (-30 Energia)',
+            acao: () => {
+                energia -= 30;
+                exibirMensagem('A janela range e você faz barulho, mas consegue entrar. Você perdeu bastante energia na tentativa.', 'alert');
+                atualizarHUD();
+                irParaFase(5);
+            }
+        }
+    ]);
+}
+
+// Fase 5: O Encontro com o "Homem da Neve" (Saci) (com enigma de perseguição/decriptação)
+function renderizarFase5() {
+    gameTitle.textContent = 'Fase 5: O Encontro com o Saci';
+    gameScreen.style.backgroundImage = 'url("https://as1.ftcdn.net/v2/jpg/04/86/02/75/1000_F_486027599_2N11vB0tG7h8VvL7qF0c5Q0T0W8Z7R5A.jpg")'; // Exemplo de fundo
+    hud.style.display = 'block';
+    inventarioContainer.style.display = 'block';
+
+    gameScreen.innerHTML = `
+        <p>Ao entrar na cabana, você sente uma brisa gelada e vê um vulto ágil e pequeno, pulando em uma perna só. É o Saci, mas este parece feito de gelo e fumaça! Ele joga algo brilhante no chão e tenta fugir.</p>
+        <p>O objeto brilhante é um "Módulo de Dados Encriptado".</p>
+        <p>O que você faz?</p>
+    `;
+
+    exibirEscolhas([
+        {
+            texto: 'Tentar capturar o Saci para interrogá-lo.',
+            acao: () => {
+                const sorte = Math.random();
+                if (sorte > 0.6) { // 40% de chance de capturar
+                    exibirMensagem('Você é rápido(a) e consegue imobilizar o Saci por um breve momento! Ele resmunga: "A verdade está onde o fluxo não congela..." e desaparece, deixando o Módulo de Dados. (+15 Reputação)', 'success');
+                    reputacao += 15;
+                    adicionarItemInventario('Sussurro do Saci'); // Pista adicional
+                    adicionarItemInventario('Módulo de Dados Encriptado');
+                    irParaFase(6);
+                } else {
+                    exibirMensagem('O Saci é ágil demais! Ele ri e desaparece na fumaça gélida, levando o Módulo de Dados consigo. (-25 Energia, -5 Reputação)', 'alert');
+                    energia -= 25;
+                    reputacao -= 5;
+                    atualizarHUD();
+                    irParaFase(6); // Não pega o módulo
+                }
+            }
+        },
+        {
+            texto: 'Pegar o "Módulo de Dados Encriptado" e tentar decifrá-lo imediatamente.',
+            acao: () => {
+                if (inventario.includes('Módulo de Dados Encriptado')) {
+                     exibirMensagem('Você já possui o Módulo. Tente decifrá-lo no inventário ou siga em frente.', 'info');
+                     // Poderia adicionar uma opção para tentar decifrar de novo
+                     irParaFase(6); // Avança pois já pegou
+                     return;
+                }
+                exibirMensagem('Você pega o módulo. Uma tela holográfica surge e pede uma senha de 4 dígitos. Pense em algo que "abre" ou "desbloqueia" e é um valor comum em computação.', 'info');
+                const senha = prompt('Digite a senha de 4 dígitos (Ex: 1024):');
+                if (senha === '1024') {
+                    exibirMensagem('Acesso concedido! O módulo revela uma coordenada para uma "Base Militar Abandonada". (+10 Reputação)', 'success');
+                    reputacao += 10;
+                    adicionarItemInventario('Módulo de Dados Desencriptado');
+                    adicionarItemInventario('Coordenada da Base');
+                    irParaFase(6);
+                } else {
+                    exibirMensagem('Senha incorreta. O módulo trava e se torna inútil. Você perde um item importante! (-15 Energia, -5 Reputação)', 'alert');
+                    energia -= 15;
+                    reputacao -= 5;
+                    atualizarHUD();
+                    irParaFase(6);
+                }
+            }
+        }
+    ]);
+}
+
+// Fase 6: Base Militar Abandonada (Exemplo de fase sem enigma direto, mas com escolha importante)
+function renderizarFase6() {
+    gameTitle.textContent = 'Fase 6: Base Militar Abandonada';
+    gameScreen.style.backgroundImage = 'url("https://as1.ftcdn.net/v2/jpg/04/85/38/54/1000_F_485385461_b4R7S93E5L9D3q6yR7V6m6X0V6h5H7Y5.jpg")'; // Exemplo de fundo
+    hud.style.display = 'block';
+    inventarioContainer.style.display = 'block';
+
+    gameScreen.innerHTML = `
+        <p>Você chega a uma antiga base militar, coberta pela neve e pelo tempo. Parece desativada, mas a presença de sinais residuais de energia te alerta. Você precisa encontrar uma forma de entrar.</p>
+        <p>O que você faz?</p>
+    `;
+
+    exibirEscolhas([
+        {
+            texto: 'Procurar por uma entrada de serviço oculta.',
+            acao: () => {
+                const chance = Math.random();
+                if (chance > 0.4) {
+                    exibirMensagem('Você encontra uma passagem secreta nos fundos da base! A entrada é discreta e leva diretamente para dentro. (+5 Reputação)', 'success');
+                    reputacao += 5;
+                    irParaFase(7);
+                } else {
+                    exibirMensagem('Você procura, mas não encontra nada. Perde tempo e energia. (-10 Energia)', 'alert');
+                    energia -= 10;
+                    atualizarHUD();
+                    // Permite tentar novamente ou escolher outra opção
+                    renderizarFase6();
+                }
+            }
+        },
+        {
+            texto: 'Tentar arrombar a porta principal. (-20 Energia)',
+            acao: () => {
+                energia -= 20;
+                exibirMensagem('Você tenta forçar a porta, fazendo barulho. Ela cede, mas você atraiu alguma atenção... (-10 Reputação)', 'alert');
+                reputacao -= 10;
+                atualizarHUD();
+                irParaFase(7);
+            }
+        }
+    ]);
+}
+
+// Fase 7: Laboratório Subterrâneo (com enigma de conexão de circuitos)
+function renderizarFase7() {
+    gameTitle.textContent = 'Fase 7: Laboratório Subterrâneo';
+    gameScreen.style.backgroundImage = 'url("https://as2.ftcdn.net/v2/jpg/06/10/72/77/1000_F_610727763_kX0tqf2x9z0J9p8p0L4K0q0o4P0W0g1h.jpg")'; // Exemplo de fundo
+    hud.style.display = 'block';
+    inventarioContainer.style.display = 'block';
+
+    gameScreen.innerHTML = `
+        <p>Você está em um laboratório subterrâneo, escuro e frio. No centro, um dispositivo de pesquisa antigo pulsa com energia residual. Para acessá-lo, você precisa conectar os circuitos corretamente.</p>
+        <p>O painel tem três cabos (Vermelho, Azul, Verde) e três portas (A, B, C).</p>
+        <p><b>Dica:</b> O vermelho sempre vai antes do verde, e o azul nunca é o primeiro, mas o verde é o último.</p>
+        <p>Qual a ordem dos cabos nas portas?</p>
+    `;
+
+    exibirEscolhas([
+        {
+            texto: 'Tentar a combinação de circuitos.',
+            acao: () => {
+                const combinacao = prompt('Digite a ordem dos cabos, separados por hífen (ex: Vermelho-Azul-Verde ou V-Az-Ve):').toLowerCase().split('-');
+                // A única combinação que satisfaz é: Vermelho - Azul - Verde
+                if (combinacao.length === 3 &&
+                    (combinacao[0] === 'vermelho' || combinacao[0] === 'v') &&
+                    (combinacao[1] === 'azul' || combinacao[1] === 'az') &&
+                    (combinacao[2] === 'verde' || combinacao[2] === 've')) {
+                    exibirMensagem('Os circuitos se conectam, e o dispositivo se ilumina! Uma tela holográfica exibe informações sobre um grupo hacker chamado "Guardiões do Folclore". (+20 Reputação)', 'success');
+                    reputacao += 20;
+                    adicionarItemInventario('Dados da Organização "Guardiões do Folclore"');
+                    atualizarHUD();
+                    irParaFase(8);
+                } else {
+                    exibirMensagem('Um choque elétrico! Os circuitos se sobrecarregam e você perde energia. (-25 Energia)', 'alert');
+                    energia -= 25;
+                    atualizarHUD();
+                    // Permite tentar novamente
+                    renderizarFase7();
+                }
+            }
+        },
+        {
+            texto: 'Desistir e procurar outra coisa.',
+            acao: () => {
+                exibirMensagem('Você decide não arriscar mais e segue em frente, mas a sensação de ter perdido algo importante permanece.', 'normal');
+                irParaFase(8);
+            }
+        }
+    ]);
+}
+
+// Fase 8: O Enigma da Curupira Hacker (Enigma de lógica)
+function renderizarFase8() {
+    gameTitle.textContent = 'Fase 8: O Enigma da Curupira Hacker';
+    gameScreen.style.backgroundImage = 'url("https://as1.ftcdn.net/v2/jpg/04/85/38/54/1000_F_485385461_b4R7S93E5L9D3q6yR7V6m6X0V6h5H7Y5.jpg")'; // Usando uma imagem genérica por enquanto
+    hud.style.display = 'block';
+    inventarioContainer.style.display = 'block';
+
+    gameScreen.innerHTML = `
+        <p>Você encontra uma projeção etérea da Curupira, mas seus olhos brilham com códigos binários. Ela te desafia com um enigma para abrir um portal para a próxima dimensão da rede.</p>
+        <p><b>Enigma da Curupira:</b></p>
+        <p>"Qual código abre as portas da floresta digital, onde os dados dançam e a verdade se oculta?</p>
+        <p>Não é chave, nem senha, mas uma **diretriz** que o sistema aceita.</p>
+        <p>Começa com 'C' e termina com 'D'."</p>
+        <p>O que você faz?</p>
+    `;
+
+    exibirEscolhas([
+        {
+            texto: 'Tentar a resposta do enigma.',
+            acao: () => {
+                const resposta = prompt('Qual é a diretriz?').toLowerCase();
+                if (resposta === 'comando') {
+                    exibirMensagem('O portal se abre, revelando uma paisagem distorcida de dados e luzes! A Curupira acena com a cabeça em aprovação. (+20 Reputação)', 'success');
+                    reputacao += 20;
+                    atualizarHUD();
+                    irParaFase(9);
+                } else {
+                    exibirMensagem('O portal se distorce e você é redirecionado para um loop de anúncios incessantes. Você perde tempo e energia. (-30 Energia, -10 Reputação)', 'alert');
+                    energia -= 30;
+                    reputacao -= 10;
+                    atualizarHUD();
+                    irParaFase(9); // Força o avanço, mas com penalidade
+                }
+            }
+        },
+        {
+            texto: 'Tentar forçar o portal com um brute force. (-40 Energia)',
+            acao: () => {
+                energia -= 40;
+                exibirMensagem('A Curupira ri. Seu brute force é inútil contra a magia digital dela. O portal o arremessa para a frente, mas você sente o impacto. (-10 Reputação)', 'alert');
+                reputacao -= 10;
+                atualizarHUD();
+                irParaFase(9);
+            }
+        }
+    ]);
+}
+
+// Fase 9: A Realidade Distorcida (Boto) (Enigma de percepção/ilusão)
+function renderizarFase9() {
+    gameTitle.textContent = 'Fase 9: A Realidade Distorcida';
+    gameScreen.style.backgroundImage = 'url("https://as1.ftcdn.net/v2/jpg/04/85/38/54/1000_F_485385461_b4R7S93E5L9D3q6yR7V6m6X0V6h5H7Y5.jpg")'; // Usando uma imagem genérica por enquanto
+    hud.style.display = 'block';
+    inventarioContainer.style.display = 'block';
+
+    gameScreen.innerHTML = `
+        <p>Você entra em uma dimensão onde a realidade é fluida e distorcida. Imagens piscam, sons se misturam. Uma figura elegante, com traços de botos digitais, aparece e desaparece, criando ilusões.</p>
+        <p>Para escapar, você deve identificar a **única imagem real** em meio a três ilusões. Olhe bem:</p>
+        <p>1. Uma floresta de bytes cintilantes.</p>
+        <p>2. Um terminal de computador flutuante, com a tela mostrando o pôr do sol do Alasca.</p>
+        <p>3. Uma aurora boreal dançando ao som de códigos, com um pequeno **símbolo de uma chave** escondido nela.</p>
+        <p>4. Uma cidade futurista construída com circuitos.</p>
+        <p>Qual das opções representa a realidade, indicando a saída?</p>
+    `;
+
+    exibirEscolhas([
+        {
+            texto: 'Escolher a imagem 1.',
+            acao: () => verificarIlusao('1')
+        },
+        {
+            texto: 'Escolher a imagem 2.',
+            acao: () => verificarIlusao('2')
+        },
+        {
+            texto: 'Escolher a imagem 3.',
+            acao: () => verificarIlusao('3')
+        },
+        {
+            texto: 'Escolher a imagem 4.',
+            acao: () => verificarIlusao('4')
+        }
+    ]);
+
+    function verificarIlusao(escolha) {
+        if (escolha === '3') {
+            exibirMensagem('A ilusão se desfaz, revelando o caminho para a Fortaleza de Gelo! Você percebeu a sutileza do Boto. (+15 Reputação)', 'success');
+            reputacao += 15;
+            atualizarHUD();
+            irParaFase(10);
+        } else {
+            exibirMensagem('O Boto ri, e você se vê preso em um labirinto de ilusões. Você gasta energia para se libertar. (-20 Energia, -5 Reputação)', 'alert');
+            energia -= 20;
+            reputacao -= 5;
+            atualizarHUD();
+            irParaFase(10); // Força o avanço, mas com penalidade
+        }
+    }
+}
+
+// Fase 10: A Fortaleza do Gelo (Cuca) (Enigma de stealth/lógica)
+function renderizarFase10() {
+    gameTitle.textContent = 'Fase 10: A Fortaleza do Gelo';
+    gameScreen.style.backgroundImage = 'url("https://as1.ftcdn.net/v2/jpg/04/85/38/54/1000_F_485385461_b4R7S93E5L9D3q6yR7V6m6X0V6h5H7Y5.jpg")'; // Usando uma imagem genérica por enquanto
+    hud.style.display = 'block';
+    inventarioContainer.style.display = 'block';
+
+    gameScreen.innerHTML = `
+        <p>Você se depara com a Fortaleza do Gelo, uma estrutura imponente e gelada, defendida por sentinelas de gelo que patrulham incessantemente. A Cuca, em sua forma digital, parece estar dentro, manipulando os dados roubados.</p>
+        <p>Para entrar sem ser detectado, você precisa encontrar um padrão nas patrulhas dos sentinelas.</p>
+        <p>Eles se movem em um padrão de 3-2-1-3-2-1 (3 segundos visível, 2 segundos escondido, 1 segundo em alerta, e repete).</p>
+        <p>Qual o momento ideal para passar pela entrada principal sem ser visto?</p>
+    `;
+
+    exibirEscolhas([
+        {
+            texto: 'Passar nos 3 segundos visíveis.',
+            acao: () => tentarEntrada('visivel')
+        },
+        {
+            texto: 'Passar nos 2 segundos escondidos.',
+            acao: () => tentarEntrada('escondido')
+        },
+        {
+            texto: 'Passar no 1 segundo em alerta.',
+            acao: () => tentarEntrada('alerta')
+        }
+    ]);
+
+    function tentarEntrada(momento) {
+        if (momento === 'escondido') {
+            exibirMensagem('Você se move com precisão cirúrgica e entra furtivamente na fortaleza. A Cuca não faz ideia da sua chegada! (+25 Reputação)', 'success');
+            reputacao += 25;
+            atualizarHUD();
+            irParaFase(11);
+        } else {
+            exibirMensagem('Você foi detectado! As sentinelas ativam alarmes e você precisa lutar para entrar. (-35 Energia, -15 Reputação)', 'alert');
+            energia -= 35;
+            reputacao -= 15;
+            attackSound.play();
+            atualizarHUD();
+            irParaFase(11);
+        }
+    }
+}
+
+// Fase 11: O Chefão Final (Cuca) (Batalha/Enigma Final)
+function renderizarFase11() {
+    gameTitle.textContent = 'Fase 11: Confronto Final com a Cuca';
+    gameScreen.style.backgroundImage = 'url("https://as1.ftcdn.net/v2/jpg/04/85/38/54/1000_F_485385461_b4R7S93E5L9D3q6yR7V6m6X0V6h5H7Y5.jpg")'; // Usando uma imagem genérica por enquanto
+    hud.style.display = 'block';
+    inventarioContainer.style.display = 'block';
+
+    gameScreen.innerHTML = `
+        <p>A Cuca surge diante de você, uma entidade colossal de dados corrompidos e gelo digital. Ela ri, seus olhos brilham com malícia.</p>
+        <p>"Você chegou longe, hackerzinho(a), mas este é o fim da linha! Eu tenho os dados do Folclore Digital, e ninguém vai me impedir!"</p>
+        <p>Para derrotá-la, você precisa desvendar a **fraqueza do algoritmo** dela.</p>
+        <p>Dica: O algoritmo dela é forte contra força, mas fraco contra a **lógica invertida**.</p>
+        <p>Qual comando você usa para atacar?</p>
+    `;
+
+    exibirEscolhas([
+        {
+            texto: 'Comando de Ataque Bruto (FORÇA_TOTAL)',
+            acao: () => atacarCuca('forca')
+        },
+        {
+            texto: 'Comando de Inversão Lógica (DECRYPT_ALGORITMO)',
+            acao: () => atacarCuca('logica_invertida')
+        },
+        {
+            texto: 'Comando de Distração (FALSO_POSITIVO)',
+            acao: () => atacarCuca('distracao')
+        }
+    ]);
+
+    function atacarCuca(ataque) {
+        if (ataque === 'logica_invertida') {
+            exibirMensagem('O comando de inversão lógica atinge o ponto fraco do algoritmo da Cuca! Ela grita em uma linguagem binária distorcida enquanto seus dados começam a se desintegrar. Você recupera os dados do Folclore Digital! (+50 Reputação)', 'success');
+            reputacao += 50;
+            adicionarItemInventario('Dados do Folclore Digital Recuperados');
+            atualizarHUD();
+            irParaFase(12); // Vitória
+        } else if (ataque === 'forca') {
+            exibirMensagem('Seu ataque bruto é absorvido pela armadura de dados da Cuca. Ela contra-ataca com um pulso eletromagnético! (-40 Energia, -20 Reputação)', 'alert');
+            energia -= 40;
+            reputacao -= 20;
+            attackSound.play();
+            atualizarHUD();
+            if (energia > 0) {
+                renderizarFase11(); // Permite tentar novamente
+            }
+        } else if (ataque === 'distracao') {
+            exibirMensagem('A Cuca mal percebe sua distração e lança uma barreira de gelo digital. (-20 Energia, -10 Reputação)', 'normal');
+            energia -= 20;
+            reputacao -= 10;
+            atualizarHUD();
+            if (energia > 0) {
+                renderizarFase11(); // Permite tentar novamente
+            }
+        }
+    }
+}
+
+// Fase 12: Fim da Jornada (Tela de Vitória/Game Over)
+function renderizarFase12() {
+    gameTitle.textContent = 'Fase 12: Fim da Jornada';
+    hud.style.display = 'none';
+    inventarioContainer.style.display = 'none';
+    regrasObjetivosMissoesContainer.style.display = 'none';
+
+    if (energia > 0) {
+        gameScreen.style.backgroundImage = 'url("https://as1.ftcdn.net/v2/jpg/04/85/38/54/1000_F_485385461_b4R7S93E5L9D3q6yR7V6m6X0V6h5H7Y5.jpg")'; // Usando uma imagem genérica por enquanto
+        gameScreen.innerHTML = `
+            <p class="final-text">Parabéns, ${player.nickname}!</p>
+            <p class="final-text">Você desvendou o mistério e salvou os dados do Folclore Digital! Sua reputação como hacker no Alasca atingiu ${reputacao} pontos.</p>
+            <p class="final-text">A rede agora está mais segura graças a você!</p>
+            <button onclick="reiniciarJogo()">Jogar Novamente</button>
+        `;
+    } else {
+        gameOver("Sua jornada terminou. Tente novamente para desvendar os mistérios do Alasca digital.");
+    }
+}
+
+// Mapeamento de fases
+const fases = {
+    0: renderizarCriacaoPersonagem,
+    1: renderizarMenuPrincipal,
+    2: renderizarFase2,
+    3: renderizarFase3,
+    4: renderizarFase4,
+    5: renderizarFase5,
+    6: renderizarFase6,
+    7: renderizarFase7,
+    8: renderizarFase8,
+    9: renderizarFase9,
+    10: renderizarFase10,
+    11: renderizarFase11,
+    12: renderizarFase12,
+};
+
+// Renderiza a fase inicial
+function renderizarFase(numeroFase) {
+    if (fases[numeroFase]) {
+        fases[numeroFase]();
+    } else {
+        gameOver("Erro: Fase não encontrada!");
+    }
+}
+
+// Iniciar o jogo
+function iniciarJogo() {
+    renderizarFase(0); // Começa na tela de criação de personagem
+}
+
+// Inicializa o jogo ao carregar a página
+document.addEventListener('DOMContentLoaded', iniciarJogo);

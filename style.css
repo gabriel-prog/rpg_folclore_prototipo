@@ -5,7 +5,6 @@ body {
     color: #00ff99;
     font-family: 'VT323', monospace;
 }
-
 .container {
     position: relative;
     z-index: 2;
@@ -17,7 +16,6 @@ body {
     box-shadow: 0 0 15px #00ff99;
     text-align: center;
 }
-
 input, select, button {
     width: 90%;
     margin: 10px 0;
@@ -27,30 +25,15 @@ input, select, button {
     background-color: #0c0c0c;
     color: #00ff99;
 }
-
 button {
     cursor: pointer;
     font-weight: bold;
     text-transform: uppercase;
     transition: all 0.3s ease;
 }
-
 button:hover {
     background-color: #00cc77;
 }
-
-.pulse {
-    animation: pulse 1.5s infinite;
-    background-color: #00ff99;
-    color: #0c0c0c;
-}
-
-@keyframes pulse {
-    0% { box-shadow: 0 0 5px #00ff99; }
-    50% { box-shadow: 0 0 20px #00ff99; }
-    100% { box-shadow: 0 0 5px #00ff99; }
-}
-
 #energiaBar {
     background-color: #333;
     border: 1px solid #00ff99;
@@ -59,7 +42,6 @@ button:hover {
     height: 20px;
     border-radius: 5px;
 }
-
 #energiaFill {
     background-color: #00ff99;
     height: 100%;
@@ -67,21 +49,16 @@ button:hover {
     border-radius: 5px;
     transition: width 0.5s;
 }
-
 #timer {
     color: #ff3333;
     font-weight: bold;
     margin: 10px 0;
     font-size: 18px;
 }
-
-/* Fundos por fase */
-body.fase1 { background-image: url('fase1.jpg'); background-size: cover; }
-body.fase2 { background-image: url('fase2.jpg'); background-size: cover; }
-body.fase3 { background-image: url('fase3.jpg'); background-size: cover; }
-body.fase4 { background-image: url('fase4.jpg'); background-size: cover; }
-
-/* Matrix Canvas Effect */
+body.fase1, body.fase2, body.fase3, body.fase4 {
+    background-image: url('images/floresta_frio.jpg');
+    background-size: cover;
+}
 #matrixCanvas {
     position: fixed;
     top: 0;

@@ -8,27 +8,41 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <h1 id="gameTitle">🌌 RPG Folclore Hacker - Jornada no Alasca 🌌</h1>
-        <div id="gameScreen"></div>
-        <div id="hud" style="display: none;">
-            <div id="energiaBar">
-                <div id="energiaFill"></div>
+    <div class="main-layout">
+        <div class="container">
+            <h1 id="gameTitle">🌌 RPG Folclore Hacker - Jornada no Alasca 🌌</h1>
+            <div id="gameScreen"></div>
+            <div id="hud" style="display: none;">
+                <div class="stat-group">
+                    <div id="vidaBar" class="bar">
+                        <div id="vidaFill" class="fill"></div>
+                    </div>
+                    <p>Vida: <span id="vidaValue">100</span></p>
+                </div>
+                <div class="stat-group">
+                    <p>Força: <span id="forcaValue">0</span></p>
+                    <p>Mana: <span id="manaValue">0</span></p>
+                </div>
+                <div id="reputacaoContainer">
+                    <p>Reputação: <span id="reputacaoValue">0</span></p>
+                </div>
+                <div id="inventarioContainer" style="display: none;">
+                    <h3>Inventário</h3>
+                    <ul id="inventarioList"></ul>
+                </div>
+                <div id="regrasObjetivosMissoesContainer" style="display: none;">
+                    <h3>Regras, Objetivos e Missões</h3>
+                    <div id="regrasContent"></div>
+                    <div id="objetivosContent"></div>
+                    <div id="missoesContent"></div>
+                </div>
             </div>
-            <p>Energia: <span id="energiaValue">100</span></p>
-            <div id="reputacaoContainer">
-                <p>Reputação: <span id="reputacaoValue">0</span></p>
-            </div>
-            <div id="inventarioContainer" style="display: none;">
-                <h3>Inventário</h3>
-                <ul id="inventarioList"></ul>
-            </div>
-            <div id="regrasObjetivosMissoesContainer" style="display: none;">
-                <h3>Regras, Objetivos e Missões</h3>
-                <div id="regrasContent"></div>
-                <div id="objetivosContent"></div>
-                <div id="missoesContent"></div>
-            </div>
+        </div>
+        <div id="rankingDisplay" style="display: none;">
+            <h2>Ranking Hacker</h2>
+            <ul id="rankingList">
+                <li>Nenhum hacker no ranking ainda.</li>
+            </ul>
         </div>
     </div>
     <canvas id="matrixCanvas"></canvas>

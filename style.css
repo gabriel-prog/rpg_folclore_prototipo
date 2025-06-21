@@ -1,14 +1,19 @@
+/* style.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
 body {
     margin: 0;
-    padding: 0;
-    background-color: #0c0c0c;
-    color: #00ff99;
+    overflow: hidden; /* Esconde barras de rolagem */
     font-family: 'VT323', monospace;
-    overflow: hidden; /* Evita barras de rolagem desnecessárias */
+    color: #00ff99; /* Cor principal de texto (verde neon) */
+    background-color: #000; /* Fundo preto */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    position: relative;
+    font-size: 1.1em;
 }
 
 #matrixCanvas {
@@ -17,363 +22,399 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    z-index: -1; /* Fica atrás de todo o conteúdo */
 }
 
-.main-layout {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    gap: 20px; /* Espaçamento entre o container do jogo e o ranking */
-    align-items: flex-start; /* Alinha o topo dos dois blocos */
-    justify-content: center;
+#gameContainer {
+    background-color: rgba(0, 20, 0, 0.8); /* Fundo semi-transparente para o conteúdo do jogo */
+    border: 2px solid #00ff99; /* Borda neon */
+    box-shadow: 0 0 20px rgba(0, 255, 153, 0.7); /* Brilho neon */
     padding: 20px;
-    box-sizing: border-box;
-    width: 100%;
-}
-
-.container {
-    max-width: 800px;
-    width: 100%; /* Permite que ocupe mais largura em telas menores */
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.8);
     border-radius: 10px;
-    box-shadow: 0 0 15px #00ff99;
     text-align: center;
-    border: 2px solid #00ff99; /* Borda cyberpunk */
-    box-sizing: border-box;
+    max-width: 90%;
+    width: 800px;
+    z-index: 1; /* Garante que fique acima do canvas */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* Para posicionamento absoluto da HUD se necessário */
 }
 
 #gameTitle {
     font-family: 'Press Start 2P', cursive;
-    color: #00ffff; /* Ciano para o título */
-    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    color: #00ff99;
+    text-shadow: 0 0 10px rgba(0, 255, 153, 0.9), 0 0 20px rgba(0, 255, 153, 0.5);
     margin-bottom: 20px;
+    font-size: 1.8em;
 }
 
-#gameScreen {
-    min-height: 300px; /* Garante um espaço mínimo */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 15px; /* Espaço entre elementos */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    transition: background-image 1.5s ease-in-out, opacity 1.5s ease-in-out; /* Transição para o fundo da fase e opacidade */
-    padding: 10px; /* Pequeno padding interno */
-    border-radius: 8px;
-    box-sizing: border-box;
-}
-
-#gameScreen p {
-    font-size: 1.1em;
-    line-height: 1.6;
-    margin: 5px 0;
-    background-color: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente para o texto */
-    padding: 8px 12px;
-    border-radius: 5px;
-    max-width: 90%; /* Limita a largura do parágrafo */
-}
-
-input, select, button {
-    width: 80%; /* Ajustado para um pouco menor */
-    margin: 8px auto; /* Centraliza melhor */
-    padding: 12px; /* Aumentado o padding */
-    border-radius: 5px;
-    border: 1px solid #00ff99;
-    background-color: #0c0c0c;
-    color: #00ff99;
-    font-family: 'VT323', monospace;
-    font-size: 1em;
-    box-sizing: border-box;
-}
-
-button {
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 5px #00ff99; /* Efeito neon sutil */
-}
-
-button:hover {
-    background-color: #00cc77;
-    color: #0c0c0c;
-    box-shadow: 0 0 15px #00cc77; /* Brilho maior no hover */
-}
-
-.mensagem {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.9);
-    color: #00ff99;
-    padding: 20px;
-    border: 2px solid #00ff99;
-    border-radius: 10px;
-    font-size: 1.2em;
-    z-index: 100;
-    opacity: 1;
-    transition: opacity 1s ease-out;
-    max-width: 80%; /* Para telas pequenas */
-    box-sizing: border-box;
-}
-
-.mensagem.success {
-    border-color: #00ff00;
-    color: #00ff00;
-}
-
-.mensagem.alert {
-    border-color: #ff0000;
-    color: #ff0000;
-}
-
-.mensagem.info {
-    border-color: #00ffff;
-    color: #00ffff;
-}
-
-/* Estilos da HUD */
 #hud {
     display: flex;
-    flex-wrap: wrap; /* Permite que os itens quebrem linha */
-    justify-content: center;
-    align-items: center;
-    gap: 10px 20px; /* Espaçamento entre linhas e colunas */
-    margin-top: 20px;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    width: 100%;
+    background-color: rgba(0, 50, 0, 0.7);
+    border: 1px solid #00aa66;
     padding: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    border: 1px solid #00ff99;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 700px;
-    box-sizing: border-box;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    box-shadow: inset 0 0 10px rgba(0, 255, 153, 0.3);
+    display: none; /* Escondido por padrão, mostrado durante o jogo */
 }
 
-.stat-group {
+.hud-section {
+    margin: 5px 10px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    min-width: 100px; /* Garante que os grupos de stats tenham largura mínima */
+    align-items: flex-start;
+    min-width: 80px;
 }
 
-#hud p {
-    margin: 0;
-    font-size: 1em;
-    text-transform: uppercase;
-    white-space: nowrap; /* Evita quebra de linha em "Vida: 100" */
-}
-
-.bar {
+.progress-bar {
+    width: 100px;
+    height: 10px;
     background-color: #333;
     border: 1px solid #00ff99;
-    width: 120px; /* Largura da barra de vida */
-    height: 18px;
-    border-radius: 5px;
-    overflow: hidden;
-}
-
-.fill {
-    height: 100%;
-    width: 100%;
-    background-color: #00ff99;
-    transition: width 0.5s ease-out;
     border-radius: 3px;
-}
-
-/* Cor específica para a barra de vida */
-#vidaFill {
-    background-color: #00ff99;
-}
-
-#reputacaoContainer {
+    overflow: hidden;
     margin-top: 5px;
 }
 
-/* Estilos para o Inventário */
-#inventarioContainer {
-    border: 1px solid #00ffff;
-    padding: 10px;
-    margin-top: 15px;
-    border-radius: 5px;
-    background-color: rgba(0, 50, 50, 0.3);
-    width: 90%;
-    max-height: 150px;
-    overflow-y: auto;
+.progress-fill {
+    height: 100%;
+    width: 100%; /* Valor padrão, será atualizado via JS */
+    background-color: #00ff99;
+    transition: width 0.3s ease-in-out;
 }
 
-#inventarioContainer h3 {
-    color: #00ffff;
-    margin-top: 0;
-    margin-bottom: 10px;
+#inventarioContainer {
+    flex-grow: 1; /* Permite que o inventário ocupe mais espaço */
+    text-align: left;
+    max-width: 200px;
+    margin-left: 20px; /* Espaçamento da direita */
+    display: none; /* Escondido por padrão */
 }
 
 #inventarioList {
-    list-style: none;
+    list-style-type: none;
     padding: 0;
     margin: 0;
-    text-align: left;
+    font-size: 0.9em;
 }
 
 #inventarioList li {
-    padding: 5px 0;
-    border-bottom: 1px dashed rgba(0, 255, 255, 0.3);
+    padding: 2px 0;
+    border-bottom: 1px dashed rgba(0, 255, 153, 0.3);
 }
-
 #inventarioList li:last-child {
     border-bottom: none;
 }
 
-/* Estilos para Regras, Objetivos e Missões */
-#regrasObjetivosMissoesContainer {
-    border: 1px solid #ff9900;
-    padding: 15px;
-    margin-top: 20px;
+
+#gameScreen {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #00aa66;
+    padding: 20px;
     border-radius: 8px;
-    background-color: rgba(50, 0, 0, 0.4);
-    width: 90%;
-    box-sizing: border-box;
-    text-align: left;
+    min-height: 250px; /* Altura mínima para o conteúdo */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Espaço entre parágrafos e botões */
+    width: calc(100% - 40px); /* 100% menos o padding */
+    box-shadow: inset 0 0 10px rgba(0, 255, 153, 0.3);
+    transition: opacity 0.5s ease-in-out; /* Para transições de fase */
+    background-size: cover;
+    background-position: center;
 }
 
-#regrasObjetivosMissoesContainer h3 {
-    color: #ff9900;
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-family: 'Press Start 2P', cursive;
-    text-align: center;
-}
-
-#regrasObjetivosMissoesContainer h4 {
-    color: #ffcc00;
-    margin-top: 15px;
-    margin-bottom: 5px;
-}
-
-#regrasObjetivosMissoesContainer ul,
-#regrasObjetivosMissoesContainer p {
-    font-size: 1em;
+#gameScreen p {
+    margin: 0;
     line-height: 1.5;
+    color: #e0ffe0; /* Cor mais clara para o texto principal */
+}
+
+#gameScreen button {
+    background-color: #006633;
+    color: #00ff99;
+    border: 1px solid #00ff99;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8em;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 8px rgba(0, 255, 153, 0.5);
+}
+
+#gameScreen button:hover {
+    background-color: #008844;
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.8);
+}
+
+#gameScreen input[type="text"],
+#gameScreen select {
+    background-color: #1a1a1a;
+    color: #00ff99;
+    border: 1px solid #00ff99;
+    padding: 8px;
     margin-bottom: 10px;
+    border-radius: 4px;
+    font-family: 'VT323', monospace;
+    font-size: 1em;
+    width: 60%;
+    max-width: 300px;
 }
 
-#regrasObjetivosMissoesContainer ul {
-    list-style-type: '⚡ ';
-    padding-left: 25px;
-}
-
-#regrasObjetivosMissoesContainer button {
+#gameScreen label {
+    margin-top: 10px;
+    margin-bottom: 5px;
     display: block;
-    margin: 20px auto 0 auto;
-    background-color: #ff9900;
-    color: #0c0c0c;
-    border-color: #ff9900;
+    color: #00ff99;
 }
 
-#regrasObjetivosMissoesContainer button:hover {
-    background-color: #cc7a00;
-    box-shadow: 0 0 15px #ff9900;
+
+/* Mensagens temporárias */
+.mensagem {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    border: 2px solid;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 1.2em;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 1s ease-out;
+    white-space: nowrap; /* Impede quebras de linha */
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.7);
 }
 
-/* Estilo para Game Over */
+.mensagem.normal { border-color: #00ff99; color: #00ff99; }
+.mensagem.info { border-color: #00aaff; color: #00aaff; }
+.mensagem.success { border-color: #33ff33; color: #33ff33; }
+.mensagem.alert { border-color: #ff3333; color: #ff3333; }
+
 .game-over-text {
     font-family: 'Press Start 2P', cursive;
-    color: #ff0000;
-    font-size: 1.8em;
-    text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
-    margin: 50px 0;
+    color: #ff3333;
+    font-size: 2em;
+    text-shadow: 0 0 10px rgba(255, 51, 51, 0.9), 0 0 20px rgba(255, 51, 51, 0.5);
+    margin-bottom: 20px;
 }
 
 .final-text {
     font-family: 'Press Start 2P', cursive;
-    color: #00ff00;
-    font-size: 1.2em;
-    text-shadow: 0 0 8px #00ff00;
-    margin: 20px 0;
+    color: #33ff33;
+    font-size: 1.5em;
+    text-shadow: 0 0 10px rgba(51, 255, 51, 0.9), 0 0 20px rgba(51, 255, 51, 0.5);
+    margin-bottom: 10px;
 }
 
-/* Estilos do Ranking */
-#rankingDisplay {
-    background: rgba(0, 0, 0, 0.8);
-    border: 2px solid #00ffff; /* Borda ciano para o ranking */
+
+/* Dica */
+.hint-button {
+    background-color: #440066; /* Cor roxa escura */
+    color: #cc66ff; /* Cor roxa clara */
+    border: 1px solid #cc66ff;
+    box-shadow: 0 0 8px rgba(204, 102, 255, 0.5);
+}
+
+.hint-button:hover {
+    background-color: #550077;
+    box-shadow: 0 0 15px rgba(204, 102, 255, 0.8);
+}
+
+
+/* Regras, Objetivos, Missões */
+#regrasObjetivosMissoesContainer {
+    display: none; /* Escondido por padrão */
+    background-color: rgba(0, 20, 0, 0.8);
+    border: 2px solid #00ff99;
+    box-shadow: 0 0 20px rgba(0, 255, 153, 0.7);
+    padding: 20px;
     border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 0 15px #00ffff;
-    width: 250px; /* Largura fixa para o ranking */
-    min-height: 300px; /* Altura mínima para não ficar muito pequeno */
     text-align: left;
-    box-sizing: border-box;
+    max-width: 90%;
+    width: 800px;
+    z-index: 1;
 }
 
-#rankingDisplay h2 {
+#regrasObjetivosMissoesContainer h4 {
     font-family: 'Press Start 2P', cursive;
-    color: #00ffff;
-    text-shadow: 0 0 8px #00ffff;
-    margin-top: 0;
-    margin-bottom: 15px;
+    color: #00ff99;
+    text-shadow: 0 0 8px rgba(0, 255, 153, 0.7);
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+#regrasObjetivosMissoesContainer ul {
+    list-style-type: none;
+    padding: 0;
+    margin-left: 20px;
+}
+
+#regrasObjetivosMissoesContainer ul li {
+    margin-bottom: 5px;
+    color: #e0ffe0;
+}
+
+#regrasObjetivosMissoesContainer button {
+    margin-top: 20px;
+    background-color: #006633;
+    color: #00ff99;
+    border: 1px solid #00ff99;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8em;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 8px rgba(0, 255, 153, 0.5);
+}
+
+#regrasObjetivosMissoesContainer button:hover {
+    background-color: #008844;
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.8);
+}
+
+.info-section {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed rgba(0, 255, 153, 0.3);
+}
+.info-section:last-child {
+    border-bottom: none;
+}
+
+.neon-text {
+    font-family: 'Press Start 2P', cursive;
+    color: #00ff99;
+    text-shadow: 0 0 10px rgba(0, 255, 153, 0.9), 0 0 20px rgba(0, 255, 153, 0.5);
+}
+
+/* Ranking Display */
+#rankingDisplay {
+    display: none; /* Escondido por padrão, mostrado no menu e game over */
+    background-color: rgba(0, 20, 0, 0.8);
+    border: 2px solid #00ff99;
+    box-shadow: 0 0 20px rgba(0, 255, 153, 0.7);
+    padding: 20px;
+    border-radius: 10px;
     text-align: center;
+    width: 100%;
+    margin-top: 20px;
 }
 
 #rankingList {
     list-style: none;
     padding: 0;
-    margin: 0;
+    font-size: 1.1em;
 }
 
 #rankingList li {
-    background-color: rgba(0, 200, 200, 0.1);
-    padding: 8px 10px;
-    margin-bottom: 5px;
-    border-radius: 4px;
-    border: 1px solid rgba(0, 255, 255, 0.3);
+    padding: 5px 0;
+    border-bottom: 1px dashed rgba(0, 255, 153, 0.3);
     display: flex;
     justify-content: space-between;
-    font-size: 0.9em;
+    align-items: center;
 }
 
-#rankingList li:nth-child(odd) {
-    background-color: rgba(0, 200, 200, 0.05); /* Um pouco mais claro */
+#rankingList li:last-child {
+    border-bottom: none;
 }
 
-
-/* Media Queries para responsividade */
-@media (max-width: 1024px) {
-    .main-layout {
-        flex-direction: column; /* Empilha o jogo e o ranking em telas menores */
-        align-items: center;
-        gap: 20px;
-    }
-    .container {
-        max-width: 95%; /* Ocupa quase toda a largura */
-    }
-    #rankingDisplay {
-        width: 90%; /* Ranking também ocupa mais largura */
-        max-width: 400px; /* Limite para não ficar gigante em tablets */
-    }
+/* --- CSS para Mensagens Subliminares --- */
+.subliminar-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0; /* Começa invisível */
+    transition: opacity 0.1s ease-in-out; /* Transição rápida */
+    z-index: 10000; /* Garante que fique acima de tudo */
+    background-color: rgba(0, 0, 0, 0.8); /* Fundo escuro para destacar */
+    padding: 10px 20px;
+    border-radius: 5px;
+    color: #00ff99; /* Cor do texto hacker */
+    font-size: 1.5em; /* Tamanho da fonte */
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.7); /* Brilho neon */
+    border: 1px solid #00ff99;
+    display: flex; /* Para alinhar imagem e texto */
+    flex-direction: column; /* Coloca a imagem acima do texto */
+    align-items: center;
+    gap: 10px; /* Espaço entre imagem e texto */
 }
 
+.subliminar-message img {
+    max-width: 120px; /* Tamanho da imagem do lanche */
+    height: auto;
+    border-radius: 5px; /* Bordas arredondadas para a imagem */
+}
+
+/* Responsividade Básica */
 @media (max-width: 768px) {
-    .container {
+    #gameContainer {
         padding: 15px;
-    }
-    #gameTitle {
-        font-size: 1.5em;
-    }
-    #gameScreen p {
-        font-size: 1em;
-    }
-    input, select, button {
         width: 95%;
-        padding: 10px;
     }
-    .game-over-text {
+
+    #gameTitle {
         font-size: 1.4em;
     }
-    .final-text {
+
+    #hud {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hud-section {
+        margin: 5px;
+        width: 100%;
+        text-align: center;
+    }
+
+    #inventarioContainer {
+        margin-left: 0;
+        margin-top: 15px;
+        max-width: 100%;
+    }
+
+    #gameScreen p, #gameScreen button {
+        font-size: 0.9em;
+    }
+
+    .mensagem {
         font-size: 1em;
+        padding: 10px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    #gameTitle {
+        font-size: 1.2em;
+    }
+
+    #gameScreen button {
+        font-size: 0.7em;
+        padding: 8px 15px;
+    }
+
+    .game-over-text, .final-text {
+        font-size: 1.2em;
+    }
+    .subliminar-message {
+        font-size: 1em;
+        padding: 5px 10px;
+    }
+    .subliminar-message img {
+        max-width: 80px;
     }
 }

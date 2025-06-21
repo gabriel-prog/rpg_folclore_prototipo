@@ -1,19 +1,19 @@
 /* style.css */
 
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
 body {
     margin: 0;
-    overflow: hidden; /* Esconde barras de rolagem */
+    overflow: hidden;
     font-family: 'VT323', monospace;
-    color: #00ff99; /* Cor principal de texto (verde neon) */
-    background-color: #000; /* Fundo preto */
+    color: #00ff99; /* Cor verde neon para o texto principal */
+    background-color: #0a0a0a; /* Fundo muito escuro */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     position: relative;
-    font-size: 1.1em;
+    text-shadow: 0 0 5px #00ff99; /* Sombra neon para o texto */
 }
 
 #matrixCanvas {
@@ -22,399 +22,392 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1; /* Fica atrás de todo o conteúdo */
+    z-index: -1; /* Garante que o canvas fique atrás de todo o conteúdo */
+    opacity: 0.15; /* Suaviza o efeito Matrix */
 }
 
-#gameContainer {
-    background-color: rgba(0, 20, 0, 0.8); /* Fundo semi-transparente para o conteúdo do jogo */
-    border: 2px solid #00ff99; /* Borda neon */
-    box-shadow: 0 0 20px rgba(0, 255, 153, 0.7); /* Brilho neon */
-    padding: 20px;
+.game-container {
+    background-color: rgba(10, 10, 10, 0.9); /* Fundo semi-transparente para o container principal */
+    border: 2px solid #00cc66; /* Borda neon sutil */
+    box-shadow: 0 0 20px rgba(0, 204, 102, 0.5); /* Brilho neon */
+    padding: 30px;
     border-radius: 10px;
     text-align: center;
-    max-width: 90%;
-    width: 800px;
-    z-index: 1; /* Garante que fique acima do canvas */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative; /* Para posicionamento absoluto da HUD se necessário */
+    width: 90%;
+    max-width: 800px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1; /* Garante que o container fique acima do canvas */
 }
 
-#gameTitle {
-    font-family: 'Press Start 2P', cursive;
-    color: #00ff99;
-    text-shadow: 0 0 10px rgba(0, 255, 153, 0.9), 0 0 20px rgba(0, 255, 153, 0.5);
+h1, h2, h3, h4 {
+    color: #00ff99; /* Títulos em verde neon */
+    text-shadow: 0 0 8px #00ff99;
     margin-bottom: 20px;
-    font-size: 1.8em;
 }
 
-#hud {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    width: 100%;
-    background-color: rgba(0, 50, 0, 0.7);
-    border: 1px solid #00aa66;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    box-shadow: inset 0 0 10px rgba(0, 255, 153, 0.3);
-    display: none; /* Escondido por padrão, mostrado durante o jogo */
-}
-
-.hud-section {
-    margin: 5px 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 80px;
-}
-
-.progress-bar {
-    width: 100px;
-    height: 10px;
-    background-color: #333;
-    border: 1px solid #00ff99;
-    border-radius: 3px;
-    overflow: hidden;
-    margin-top: 5px;
-}
-
-.progress-fill {
-    height: 100%;
-    width: 100%; /* Valor padrão, será atualizado via JS */
-    background-color: #00ff99;
-    transition: width 0.3s ease-in-out;
-}
-
-#inventarioContainer {
-    flex-grow: 1; /* Permite que o inventário ocupe mais espaço */
-    text-align: left;
-    max-width: 200px;
-    margin-left: 20px; /* Espaçamento da direita */
-    display: none; /* Escondido por padrão */
-}
-
-#inventarioList {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-    font-size: 0.9em;
-}
-
-#inventarioList li {
-    padding: 2px 0;
-    border-bottom: 1px dashed rgba(0, 255, 153, 0.3);
-}
-#inventarioList li:last-child {
-    border-bottom: none;
-}
-
-
-#gameScreen {
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 1px solid #00aa66;
+.game-screen {
+    background-color: rgba(0, 0, 0, 0.7); /* Fundo mais escuro para a tela de jogo */
+    border: 1px solid #00994c;
     padding: 20px;
-    border-radius: 8px;
-    min-height: 250px; /* Altura mínima para o conteúdo */
+    margin-bottom: 20px;
+    min-height: 250px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 15px; /* Espaço entre parágrafos e botões */
-    width: calc(100% - 40px); /* 100% menos o padding */
-    box-shadow: inset 0 0 10px rgba(0, 255, 153, 0.3);
-    transition: opacity 0.5s ease-in-out; /* Para transições de fase */
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0, 255, 153, 0.3); /* Brilho interno */
+    transition: background-image 1.5s ease-in-out, opacity 1.5s ease-in-out; /* Transição suave */
     background-size: cover;
     background-position: center;
 }
 
-#gameScreen p {
-    margin: 0;
+.game-screen p {
+    margin: 10px 0;
     line-height: 1.5;
-    color: #e0ffe0; /* Cor mais clara para o texto principal */
+    color: #b3ffda; /* Texto principal um pouco mais claro */
 }
 
-#gameScreen button {
-    background-color: #006633;
-    color: #00ff99;
-    border: 1px solid #00ff99;
-    padding: 10px 20px;
-    margin: 5px;
+/* Estilo para mensagens dentro do game-screen */
+.game-screen .mensagem {
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px 15px;
     border-radius: 5px;
-    cursor: pointer;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 0.8em;
-    transition: background-color 0.2s, box-shadow 0.2s;
-    box-shadow: 0 0 8px rgba(0, 255, 153, 0.5);
-}
-
-#gameScreen button:hover {
-    background-color: #008844;
-    box-shadow: 0 0 15px rgba(0, 255, 153, 0.8);
-}
-
-#gameScreen input[type="text"],
-#gameScreen select {
-    background-color: #1a1a1a;
-    color: #00ff99;
-    border: 1px solid #00ff99;
-    padding: 8px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    font-family: 'VT323', monospace;
-    font-size: 1em;
-    width: 60%;
-    max-width: 300px;
-}
-
-#gameScreen label {
-    margin-top: 10px;
-    margin-bottom: 5px;
-    display: block;
-    color: #00ff99;
-}
-
-
-/* Mensagens temporárias */
-.mensagem {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.9);
-    border: 2px solid;
-    padding: 15px 30px;
-    border-radius: 8px;
-    font-size: 1.2em;
-    z-index: 1000;
+    margin-top: 15px;
+    font-size: 1.1em;
     opacity: 1;
     transition: opacity 1s ease-out;
-    white-space: nowrap; /* Impede quebras de linha */
-    box-shadow: 0 0 15px rgba(0, 255, 153, 0.7);
+    border: 1px solid;
 }
 
-.mensagem.normal { border-color: #00ff99; color: #00ff99; }
-.mensagem.info { border-color: #00aaff; color: #00aaff; }
-.mensagem.success { border-color: #33ff33; color: #33ff33; }
-.mensagem.alert { border-color: #ff3333; color: #ff3333; }
-
-.game-over-text {
-    font-family: 'Press Start 2P', cursive;
-    color: #ff3333;
-    font-size: 2em;
-    text-shadow: 0 0 10px rgba(255, 51, 51, 0.9), 0 0 20px rgba(255, 51, 51, 0.5);
-    margin-bottom: 20px;
+.mensagem.normal {
+    border-color: #00cc66;
+    color: #b3ffda;
 }
 
-.final-text {
-    font-family: 'Press Start 2P', cursive;
-    color: #33ff33;
-    font-size: 1.5em;
-    text-shadow: 0 0 10px rgba(51, 255, 51, 0.9), 0 0 20px rgba(51, 255, 51, 0.5);
-    margin-bottom: 10px;
+.mensagem.info {
+    border-color: #0099ff;
+    color: #99ccff;
+}
+
+.mensagem.success {
+    border-color: #33cc33;
+    color: #99ff99;
+}
+
+.mensagem.alert {
+    border-color: #ff3333;
+    color: #ff9999;
+    animation: pulseRed 0.5s infinite alternate; /* Adiciona um pequeno pulso */
+}
+
+@keyframes pulseRed {
+    from { box-shadow: 0 0 5px rgba(255, 51, 51, 0.5); }
+    to { box-shadow: 0 0 15px rgba(255, 51, 51, 0.8); }
 }
 
 
-/* Dica */
+button {
+    background-color: #007744; /* Botão verde escuro */
+    color: #e6ffe6; /* Texto quase branco */
+    border: 1px solid #00ff99; /* Borda neon */
+    padding: 12px 25px;
+    margin: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'VT323', monospace;
+    font-size: 1.1em;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 255, 153, 0.3);
+}
+
+button:hover {
+    background-color: #00aa55; /* Um pouco mais claro no hover */
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.6);
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 0 5px rgba(0, 255, 153, 0.8);
+}
+
+/* Botão de dica */
 .hint-button {
-    background-color: #440066; /* Cor roxa escura */
-    color: #cc66ff; /* Cor roxa clara */
-    border: 1px solid #cc66ff;
-    box-shadow: 0 0 8px rgba(204, 102, 255, 0.5);
+    background-color: #5500aa; /* Roxo escuro */
+    border-color: #cc66ff; /* Borda roxa neon */
+    box-shadow: 0 0 10px rgba(204, 102, 255, 0.4);
 }
 
 .hint-button:hover {
-    background-color: #550077;
-    box-shadow: 0 0 15px rgba(204, 102, 255, 0.8);
+    background-color: #7700cc;
+    box-shadow: 0 0 15px rgba(204, 102, 255, 0.7);
 }
 
-
-/* Regras, Objetivos, Missões */
-#regrasObjetivosMissoesContainer {
-    display: none; /* Escondido por padrão */
-    background-color: rgba(0, 20, 0, 0.8);
-    border: 2px solid #00ff99;
-    box-shadow: 0 0 20px rgba(0, 255, 153, 0.7);
-    padding: 20px;
-    border-radius: 10px;
-    text-align: left;
-    max-width: 90%;
-    width: 800px;
-    z-index: 1;
+input[type="text"], select {
+    background-color: #000000; /* Fundo preto */
+    color: #00ff99; /* Texto verde neon */
+    border: 1px solid #00994c;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-family: 'VT323', monospace;
+    font-size: 1em;
+    box-shadow: inset 0 0 5px rgba(0, 255, 153, 0.2);
+    width: calc(100% - 22px); /* Ajusta para padding e borda */
+    max-width: 300px;
 }
 
-#regrasObjetivosMissoesContainer h4 {
-    font-family: 'Press Start 2P', cursive;
+input[type="text"]:focus, select:focus {
+    outline: none;
+    border-color: #00ff99;
+    box-shadow: inset 0 0 8px rgba(0, 255, 153, 0.5);
+}
+
+.hud {
+    display: flex;
+    justify-content: space-around;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #00ff99;
+    padding: 10px;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.4);
+    flex-wrap: wrap; /* Permite que os itens quebrem a linha */
+    display: none; /* Escondido por padrão, mostrado pelo JS */
+}
+
+.hud-section {
+    margin: 5px 10px;
+    font-size: 1.1em;
     color: #00ff99;
-    text-shadow: 0 0 8px rgba(0, 255, 153, 0.7);
-    margin-top: 20px;
-    margin-bottom: 10px;
-    font-size: 1.2em;
 }
 
-#regrasObjetivosMissoesContainer ul {
-    list-style-type: none;
+.progress-bar-container {
+    width: 100px;
+    background-color: #333;
+    border: 1px solid #00ff99;
+    border-radius: 3px;
+    overflow: hidden;
+    height: 10px;
+    margin-top: 5px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 100%; /* Inicia cheio */
+    background-color: #00ff99; /* Verde neon */
+    transition: width 0.3s ease-out;
+}
+
+/* Cores específicas para a barra de vida */
+#vidaFill {
+    background-color: #ff004c; /* Vermelho escuro para vida */
+}
+
+
+.inventario-container, .info-container, .ranking-display {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid #00ff99;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.4);
+    text-align: left;
+    display: none; /* Escondido por padrão */
+}
+
+.inventario-container ul {
+    list-style: none;
     padding: 0;
-    margin-left: 20px;
+    margin: 10px 0 0;
 }
 
-#regrasObjetivosMissoesContainer ul li {
+.inventario-container li {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid #00cc66;
     margin-bottom: 5px;
-    color: #e0ffe0;
+    padding: 8px;
+    border-radius: 3px;
+    color: #b3ffda;
 }
 
-#regrasObjetivosMissoesContainer button {
-    margin-top: 20px;
-    background-color: #006633;
+.info-container .tab-button {
+    background-color: #004422;
     color: #00ff99;
     border: 1px solid #00ff99;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 0.8em;
-    transition: background-color 0.2s, box-shadow 0.2s;
-    box-shadow: 0 0 8px rgba(0, 255, 153, 0.5);
+    padding: 8px 15px;
+    margin: 0 5px 10px 0;
+    border-radius: 5px 5px 0 0;
+    font-size: 1em;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-#regrasObjetivosMissoesContainer button:hover {
-    background-color: #008844;
-    box-shadow: 0 0 15px rgba(0, 255, 153, 0.8);
+.info-container .tab-button.active {
+    background-color: #007744;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 255, 153, 0.5);
 }
 
-.info-section {
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px dashed rgba(0, 255, 153, 0.3);
-}
-.info-section:last-child {
-    border-bottom: none;
+.tab-content {
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 1px solid #00994c;
+    padding: 15px;
+    border-radius: 0 5px 5px 5px;
+    text-align: left;
+    display: none; /* Escondido por padrão */
 }
 
-.neon-text {
-    font-family: 'Press Start 2P', cursive;
-    color: #00ff99;
-    text-shadow: 0 0 10px rgba(0, 255, 153, 0.9), 0 0 20px rgba(0, 255, 153, 0.5);
+.tab-content.active {
+    display: block;
+}
+
+.tab-content ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin-top: 10px;
+    color: #b3ffda;
+}
+
+.tab-content ul li {
+    margin-bottom: 5px;
+}
+
+.info-text {
+    color: #00ffff; /* Ciano para informações úteis */
+    font-weight: bold;
+    text-shadow: 0 0 5px #00ffff;
 }
 
 /* Ranking Display */
-#rankingDisplay {
-    display: none; /* Escondido por padrão, mostrado no menu e game over */
-    background-color: rgba(0, 20, 0, 0.8);
-    border: 2px solid #00ff99;
-    box-shadow: 0 0 20px rgba(0, 255, 153, 0.7);
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    width: 100%;
-    margin-top: 20px;
-}
-
-#rankingList {
+.ranking-display ol {
     list-style: none;
     padding: 0;
-    font-size: 1.1em;
+    margin: 10px 0 0;
 }
 
-#rankingList li {
-    padding: 5px 0;
-    border-bottom: 1px dashed rgba(0, 255, 153, 0.3);
+.ranking-display li {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid #00cc66;
+    margin-bottom: 5px;
+    padding: 8px;
+    border-radius: 3px;
+    color: #b3ffda;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-#rankingList li:last-child {
-    border-bottom: none;
-}
-
-/* --- CSS para Mensagens Subliminares --- */
+/* Mensagens subliminares */
 .subliminar-message {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    opacity: 0; /* Começa invisível */
-    transition: opacity 0.1s ease-in-out; /* Transição rápida */
-    z-index: 10000; /* Garante que fique acima de tudo */
-    background-color: rgba(0, 0, 0, 0.8); /* Fundo escuro para destacar */
-    padding: 10px 20px;
-    border-radius: 5px;
-    color: #00ff99; /* Cor do texto hacker */
-    font-size: 1.5em; /* Tamanho da fonte */
-    text-align: center;
-    box-shadow: 0 0 15px rgba(0, 255, 153, 0.7); /* Brilho neon */
-    border: 1px solid #00ff99;
-    display: flex; /* Para alinhar imagem e texto */
-    flex-direction: column; /* Coloca a imagem acima do texto */
+    opacity: 0;
+    font-size: 2em;
+    font-weight: bold;
+    color: #ff00ff; /* Cor neon magenta */
+    text-shadow: 0 0 15px #ff00ff, 0 0 25px #ff00ff;
+    z-index: 9999;
+    pointer-events: none; /* Permite cliques através */
+    transition: opacity 0.05s ease-in-out; /* Transição muito rápida */
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px; /* Espaço entre imagem e texto */
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.8); /* Fundo escuro para a mensagem */
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #ff00ff;
 }
 
 .subliminar-message img {
-    max-width: 120px; /* Tamanho da imagem do lanche */
+    max-width: 150px;
     height: auto;
-    border-radius: 5px; /* Bordas arredondadas para a imagem */
+    margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.7);
 }
 
-/* Responsividade Básica */
+.subliminar-message p {
+    margin: 0;
+    text-align: center;
+    font-size: 0.8em; /* Reduz o tamanho do texto dentro da mensagem subliminar */
+}
+
+/* Estilo para tela de Game Over */
+.game-over-text {
+    font-size: 2em;
+    color: #ff3333; /* Vermelho vibrante */
+    text-shadow: 0 0 10px #ff3333, 0 0 20px #ff3333;
+    margin-bottom: 30px;
+    animation: flickerRed 1.5s infinite alternate;
+}
+
+@keyframes flickerRed {
+    0%, 100% { opacity: 1; text-shadow: 0 0 10px #ff3333, 0 0 20px #ff3333; }
+    50% { opacity: 0.8; text-shadow: 0 0 5px #ff3333, 0 0 10px #ff3333; }
+}
+
+/* Estilo para a tela final de vitória */
+.final-text {
+    font-size: 1.8em;
+    color: #00ff99; /* Verde neon */
+    text-shadow: 0 0 10px #00ff99, 0 0 20px #00ff99;
+    margin-bottom: 20px;
+}
+
+/* Responsividade básica */
 @media (max-width: 768px) {
-    #gameContainer {
-        padding: 15px;
-        width: 95%;
+    .game-container {
+        padding: 20px;
     }
 
-    #gameTitle {
-        font-size: 1.4em;
-    }
-
-    #hud {
+    .hud {
         flex-direction: column;
         align-items: center;
     }
 
     .hud-section {
-        margin: 5px;
-        width: 100%;
-        text-align: center;
+        margin: 5px 0;
     }
 
-    #inventarioContainer {
-        margin-left: 0;
-        margin-top: 15px;
-        max-width: 100%;
-    }
-
-    #gameScreen p, #gameScreen button {
-        font-size: 0.9em;
-    }
-
-    .mensagem {
-        font-size: 1em;
+    button {
         padding: 10px 20px;
+        font-size: 1em;
+    }
+
+    .subliminar-message {
+        font-size: 1.5em;
     }
 }
 
 @media (max-width: 480px) {
-    #gameTitle {
-        font-size: 1.2em;
+    .game-container {
+        padding: 15px;
     }
 
-    #gameScreen button {
-        font-size: 0.7em;
-        padding: 8px 15px;
+    h1 {
+        font-size: 1.8em;
     }
 
-    .game-over-text, .final-text {
-        font-size: 1.2em;
+    .game-screen p {
+        font-size: 0.9em;
     }
+
+    button {
+        width: 90%;
+        margin: 5px auto;
+    }
+
     .subliminar-message {
-        font-size: 1em;
-        padding: 5px 10px;
+        font-size: 1.2em;
     }
+
     .subliminar-message img {
-        max-width: 80px;
+        max-width: 100px;
     }
 }

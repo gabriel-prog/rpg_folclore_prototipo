@@ -20,18 +20,28 @@ body {
     z-index: 1;
 }
 
-.container {
+.main-layout {
     position: relative;
     z-index: 2;
+    display: flex;
+    gap: 20px; /* Espaçamento entre o container do jogo e o ranking */
+    align-items: flex-start; /* Alinha o topo dos dois blocos */
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.container {
     max-width: 800px;
-    margin: auto;
+    width: 100%; /* Permite que ocupe mais largura em telas menores */
     padding: 20px;
     background: rgba(0, 0, 0, 0.8);
     border-radius: 10px;
     box-shadow: 0 0 15px #00ff99;
     text-align: center;
     border: 2px solid #00ff99; /* Borda cyberpunk */
-    box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
+    box-sizing: border-box;
 }
 
 #gameTitle {
@@ -61,7 +71,7 @@ body {
     font-size: 1.1em;
     line-height: 1.6;
     margin: 5px 0;
-    background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente para o texto */
+    background-color: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente para o texto */
     padding: 8px 12px;
     border-radius: 5px;
     max-width: 90%; /* Limita a largura do parágrafo */
@@ -95,19 +105,21 @@ button:hover {
 }
 
 .mensagem {
-    position: fixed; /* Fixa a mensagem na tela */
+    position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Centraliza a mensagem */
+    transform: translate(-50%, -50%);
     background-color: rgba(0, 0, 0, 0.9);
     color: #00ff99;
     padding: 20px;
     border: 2px solid #00ff99;
     border-radius: 10px;
     font-size: 1.2em;
-    z-index: 100; /* Garante que fique acima de outros elementos */
+    z-index: 100;
     opacity: 1;
     transition: opacity 1s ease-out;
+    max-width: 80%; /* Para telas pequenas */
+    box-sizing: border-box;
 }
 
 .mensagem.success {
@@ -128,40 +140,54 @@ button:hover {
 /* Estilos da HUD */
 #hud {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap; /* Permite que os itens quebrem linha */
+    justify-content: center;
     align-items: center;
-    gap: 10px;
+    gap: 10px 20px; /* Espaçamento entre linhas e colunas */
     margin-top: 20px;
     padding: 10px;
     background: rgba(0, 0, 0, 0.7);
     border: 1px solid #00ff99;
     border-radius: 8px;
     width: 90%;
-    max-width: 700px; /* Limita a largura da HUD */
+    max-width: 700px;
     box-sizing: border-box;
+}
+
+.stat-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 100px; /* Garante que os grupos de stats tenham largura mínima */
 }
 
 #hud p {
     margin: 0;
     font-size: 1em;
     text-transform: uppercase;
+    white-space: nowrap; /* Evita quebra de linha em "Vida: 100" */
 }
 
-#energiaBar {
+.bar {
     background-color: #333;
     border: 1px solid #00ff99;
-    width: 90%; /* Ocupa mais espaço na HUD */
+    width: 120px; /* Largura da barra de vida */
     height: 18px;
     border-radius: 5px;
-    overflow: hidden; /* Garante que o preenchimento não saia da barra */
+    overflow: hidden;
 }
 
-#energiaFill {
+.fill {
     height: 100%;
-    width: 100%; /* Começa cheio */
+    width: 100%;
     background-color: #00ff99;
-    transition: width 0.5s ease-out; /* Anima a mudança de energia */
+    transition: width 0.5s ease-out;
     border-radius: 3px;
+}
+
+/* Cor específica para a barra de vida */
+#vidaFill {
+    background-color: #00ff99;
 }
 
 #reputacaoContainer {
@@ -174,10 +200,10 @@ button:hover {
     padding: 10px;
     margin-top: 15px;
     border-radius: 5px;
-    background-color: rgba(0, 50, 50, 0.3); /* Um tom diferente para o inventário */
+    background-color: rgba(0, 50, 50, 0.3);
     width: 90%;
-    max-height: 150px; /* Limita a altura do inventário */
-    overflow-y: auto; /* Adiciona scroll se muitos itens */
+    max-height: 150px;
+    overflow-y: auto;
 }
 
 #inventarioContainer h3 {
@@ -204,7 +230,7 @@ button:hover {
 
 /* Estilos para Regras, Objetivos e Missões */
 #regrasObjetivosMissoesContainer {
-    border: 1px solid #ff9900; /* Cor para destaque */
+    border: 1px solid #ff9900;
     padding: 15px;
     margin-top: 20px;
     border-radius: 8px;
@@ -236,12 +262,12 @@ button:hover {
 }
 
 #regrasObjetivosMissoesContainer ul {
-    list-style-type: '⚡ '; /* Ícone divertido para a lista */
+    list-style-type: '⚡ ';
     padding-left: 25px;
 }
 
 #regrasObjetivosMissoesContainer button {
-    display: block; /* Ocupa a largura total */
+    display: block;
     margin: 20px auto 0 auto;
     background-color: #ff9900;
     color: #0c0c0c;
@@ -252,7 +278,6 @@ button:hover {
     background-color: #cc7a00;
     box-shadow: 0 0 15px #ff9900;
 }
-
 
 /* Estilo para Game Over */
 .game-over-text {
@@ -271,30 +296,83 @@ button:hover {
     margin: 20px 0;
 }
 
+/* Estilos do Ranking */
+#rankingDisplay {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #00ffff; /* Borda ciano para o ranking */
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 0 15px #00ffff;
+    width: 250px; /* Largura fixa para o ranking */
+    min-height: 300px; /* Altura mínima para não ficar muito pequeno */
+    text-align: left;
+    box-sizing: border-box;
+}
+
+#rankingDisplay h2 {
+    font-family: 'Press Start 2P', cursive;
+    color: #00ffff;
+    text-shadow: 0 0 8px #00ffff;
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+#rankingList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#rankingList li {
+    background-color: rgba(0, 200, 200, 0.1);
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+}
+
+#rankingList li:nth-child(odd) {
+    background-color: rgba(0, 200, 200, 0.05); /* Um pouco mais claro */
+}
+
+
 /* Media Queries para responsividade */
+@media (max-width: 1024px) {
+    .main-layout {
+        flex-direction: column; /* Empilha o jogo e o ranking em telas menores */
+        align-items: center;
+        gap: 20px;
+    }
+    .container {
+        max-width: 95%; /* Ocupa quase toda a largura */
+    }
+    #rankingDisplay {
+        width: 90%; /* Ranking também ocupa mais largura */
+        max-width: 400px; /* Limite para não ficar gigante em tablets */
+    }
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 15px;
-        width: 95%;
     }
-
     #gameTitle {
         font-size: 1.5em;
     }
-
     #gameScreen p {
         font-size: 1em;
     }
-
     input, select, button {
         width: 95%;
         padding: 10px;
     }
-
     .game-over-text {
         font-size: 1.4em;
     }
-
     .final-text {
         font-size: 1em;
     }

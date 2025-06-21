@@ -43,23 +43,22 @@ function iniciarCronometro(segundos, aoExpirar) {
 }
 
 function fase1() {
-    document.body.className = "fase1";
+    document.body.style.backgroundImage = "url('images/floresta_frio.jpg')";
     document.body.style.fontFamily = "'VT323', monospace";
     document.getElementById('gameScreen').innerHTML = `
         <div id="energiaBar"><div id="energiaFill"></div></div>
         <div id="timer"></div>
-        <p>🌨️ Fase 1: Plantação Congelada no Alasca.</p>
-        <button onclick="fase2(); tocarClique();">Ir para o Laboratório</button>
+        <p>🌨️ Fase 1: Você acorda em uma plantação congelada no Alasca...</p>
+        <button onclick="fase2(); tocarClique();">Ir para o laboratório</button>
     `;
 }
 
 function fase2() {
-    document.body.className = "fase2";
+    document.body.style.backgroundImage = "url('images/floresta_frio.jpg')";
     document.body.style.fontFamily = "'Press Start 2P', cursive";
     document.getElementById('gameScreen').innerHTML = `
         <div id="energiaBar"><div id="energiaFill"></div></div>
-        <div id="timer"></div>
-        <p>🔋 Fase 2: Laboratório Abandonado.</p>
+        <p>🔋 Fase 2: Laboratório abandonado...</p>
         <button onclick="ativarPoderHacker(); tocarClique();">Ativar Poder Hacker</button>
     `;
 }
@@ -68,8 +67,8 @@ function ativarPoderHacker() {
     document.body.style.backgroundColor = "black";
     document.getElementById('gameScreen').innerHTML = `
         <canvas id="matrixCanvas"></canvas>
-        <p>🟢 Poder Hacker Matrix Ativado!</p>
-        <button onclick="fase3(); tocarClique();">Avançar para a Fase 3</button>
+        <p>🟢 Seu poder Hacker foi ativado!</p>
+        <button onclick="fase3(); tocarClique();">Ir para Fase 3</button>
     `;
     startMatrixEffect();
 }
@@ -94,111 +93,129 @@ function startMatrixEffect() {
 }
 
 function fase3() {
-    document.body.className = "fase3";
+    document.body.style.backgroundImage = "url('images/floresta_frio.jpg')";
     document.body.style.fontFamily = "'VT323', monospace";
-    atualizarEnergia(-30);
+    atualizarEnergia(-20);
+
     document.getElementById('gameScreen').innerHTML = `
         <div id="energiaBar"><div id="energiaFill"></div></div>
         <div id="timer"></div>
-        <p>🌲 Fase 3: Floresta densa. Você sente fome.</p>
-        <p>Você precisa comer em 20 segundos ou perderá energia!</p>
-        <button onclick="comer(); tocarClique();">Comer</button>
+        <p>🌲 Fase 3: Você sente fome e está ficando fraco.</p>
+        <p>Escolha o que fazer antes de 20 segundos:</p>
+        <button onclick="procurarComida(); tocarClique();">Procurar comida</button>
+        <button onclick="ignorarFome(); tocarClique();">Ignorar fome</button>
     `;
     tocarAlerta();
     iniciarCronometro(20, () => {
-        atualizarEnergia(-50);
-        document.getElementById('gameScreen').innerHTML += `<p>❌ Você demorou demais!</p><button onclick="fase4(); tocarClique();">Fase 4</button>`;
+        atualizarEnergia(-30);
+        fase4();
     });
 }
 
-function comer() {
+function procurarComida() {
     clearInterval(timerInterval);
-    atualizarEnergia(20);
-    document.getElementById('gameScreen').innerHTML += `
-        <p>✅ Você se alimentou e recuperou energia!</p>
-        <button onclick="fase4(); tocarClique();">Fase 4</button>
+    atualizarEnergia(30);
+    document.getElementById('gameScreen').innerHTML = `
+        <p>✅ Você encontrou algumas frutas congeladas e comeu!</p>
+        <button onclick="fase4(); tocarClique();">Avançar para Fase 4</button>
+    `;
+}
+
+function ignorarFome() {
+    clearInterval(timerInterval);
+    atualizarEnergia(-30);
+    document.getElementById('gameScreen').innerHTML = `
+        <p>❌ Você ficou ainda mais fraco.</p>
+        <button onclick="fase4(); tocarClique();">Avançar para Fase 4</button>
     `;
 }
 
 function fase4() {
-    document.body.className = "fase4";
     document.body.style.fontFamily = "'Press Start 2P', cursive";
-    document.getElementById('gameScreen').innerHTML = `
-        <div id="energiaBar"><div id="energiaFill"></div></div>
-        <p>🏞️ Fase 4: Um inimigo te ataca!</p>
-        <button onclick="fase5(); tocarClique();">Continuar</button>
-    `;
-}
-function fase5() {
-    document.body.className = "fase1";
-    document.body.style.fontFamily = "'VT323', monospace";
     atualizarEnergia(-10);
     document.getElementById('gameScreen').innerHTML = `
         <div id="energiaBar"><div id="energiaFill"></div></div>
-        <p>🌌 Fase 5: Floresta Noturna. Um espírito sombrio aparece!</p>
-        <button onclick="atacarInimigo(); tocarAtaque();">⚔️ Atacar</button>
-        <button onclick="fugir(); tocarClique();">🏃‍♂️ Fugir</button>
+        <p>👹 Fase 4: Um espírito te ataca!</p>
+        <button onclick="atacarInimigo(); tocarAtaque();">Atacar</button>
+        <button onclick="fugir(); tocarClique();">Fugir</button>
     `;
 }
 
 function atacarInimigo() {
-    atualizarEnergia(-20);
+    atualizarEnergia(-15);
     document.getElementById('gameScreen').innerHTML = `
-        <p>💥 Você derrotou o inimigo, mas gastou energia.</p>
-        <button onclick="fase6(); tocarClique();">Avançar para a Fase 6</button>
+        <p>💥 Você venceu o inimigo, mas perdeu energia!</p>
+        <button onclick="fase5(); tocarClique();">Fase 5</button>
     `;
 }
 
 function fugir() {
     atualizarEnergia(-5);
     document.getElementById('gameScreen').innerHTML = `
-        <p>✅ Você fugiu com menos perda de energia.</p>
-        <button onclick="fase6(); tocarClique();">Avançar para a Fase 6</button>
+        <p>✅ Você conseguiu fugir!</p>
+        <button onclick="fase5(); tocarClique();">Fase 5</button>
+    `;
+}
+
+// Continua nas próximas fases com múltiplas escolhas também (Fase 5 até 10)
+
+function fase5() {
+    document.getElementById('gameScreen').innerHTML = `
+        <p>🌌 Fase 5: Você encontra um computador quebrado no caminho...</p>
+        <button onclick="tentarReparar(); tocarClique();">Tentar reparar</button>
+        <button onclick="ignorarPC(); tocarClique();">Ignorar e seguir</button>
+    `;
+}
+
+function tentarReparar() {
+    atualizarEnergia(-10);
+    document.getElementById('gameScreen').innerHTML = `
+        <p>🔧 Você tentou reparar, mas gastou energia.</p>
+        <button onclick="fase6(); tocarClique();">Fase 6</button>
+    `;
+}
+
+function ignorarPC() {
+    document.getElementById('gameScreen').innerHTML = `
+        <p>🚶‍♂️ Você seguiu em frente...</p>
+        <button onclick="fase6(); tocarClique();">Fase 6</button>
     `;
 }
 
 function fase6() {
-    document.body.className = "fase2";
-    document.body.style.fontFamily = "'Press Start 2P', cursive";
-    atualizarEnergia(-15);
     document.getElementById('gameScreen').innerHTML = `
-        <div id="energiaBar"><div id="energiaFill"></div></div>
-        <p>🕳️ Fase 6: Caverna Subterrânea. Escolha o caminho:</p>
-        <button onclick="escolhaCaminho('esquerda'); tocarClique();">← Esquerda</button>
-        <button onclick="escolhaCaminho('direita'); tocarClique();">→ Direita</button>
+        <p>🕳️ Fase 6: Entrada de uma caverna...</p>
+        <button onclick="entrarNaCaverna(); tocarClique();">Entrar</button>
+        <button onclick="darAVolta(); tocarClique();">Dar a volta</button>
     `;
 }
 
-function escolhaCaminho(caminho) {
-    if (caminho === 'esquerda') {
-        atualizarEnergia(-30);
-        document.getElementById('gameScreen').innerHTML = `
-            <p>❌ Armadilha! Você perdeu energia.</p>
-            <button onclick="fase7(); tocarClique();">Fase 7</button>
-        `;
-    } else {
-        atualizarEnergia(10);
-        document.getElementById('gameScreen').innerHTML = `
-            <p>✅ Caminho certo! Energia recuperada.</p>
-            <button onclick="fase7(); tocarClique();">Fase 7</button>
-        `;
-    }
+function entrarNaCaverna() {
+    atualizarEnergia(-20);
+    document.getElementById('gameScreen').innerHTML = `
+        <p>⚡ Você entrou e enfrentou monstros...</p>
+        <button onclick="fase7(); tocarClique();">Fase 7</button>
+    `;
+}
+
+function darAVolta() {
+    atualizarEnergia(-5);
+    document.getElementById('gameScreen').innerHTML = `
+        <p>✅ Você evitou perigos!</p>
+        <button onclick="fase7(); tocarClique();">Fase 7</button>
+    `;
 }
 
 function fase7() {
-    document.body.className = "fase3";
-    document.body.style.fontFamily = "'VT323', monospace";
-    atualizarEnergia(-10);
     document.getElementById('gameScreen').innerHTML = `
-        <div id="energiaBar"><div id="energiaFill"></div></div>
-        <p>💻 Fase 7: Vila Hacker Subterrânea. Quebre o código em 15 segundos!</p>
-        <button onclick="quebrarCodigo(); tocarClique();">Quebrar Código</button>
+        <p>💻 Fase 7: Vila Hacker Subterrânea. Quebre o código antes de 15 segundos!</p>
+        <button onclick="quebrarCodigo(); tocarClique();">Quebrar código</button>
         <div id="timer"></div>
     `;
     tocarAlerta();
     iniciarCronometro(15, () => {
         atualizarEnergia(-25);
-        document.getElementById('gameScreen').innerHTML += `<p>❌ Tempo esgotado!</p><button onclick="fase8(); tocarClique();">Fase 8</button>`;
+        fase8();
     });
 }
 
@@ -206,58 +223,51 @@ function quebrarCodigo() {
     clearInterval(timerInterval);
     atualizarEnergia(15);
     document.getElementById('gameScreen').innerHTML = `
-        <p>✅ Código quebrado! Energia recuperada.</p>
+        <p>✅ Código quebrado com sucesso!</p>
         <button onclick="fase8(); tocarClique();">Fase 8</button>
     `;
 }
 
 function fase8() {
-    document.body.className = "fase4";
-    document.body.style.fontFamily = "'Press Start 2P', cursive";
-    atualizarEnergia(-20);
     document.getElementById('gameScreen').innerHTML = `
-        <div id="energiaBar"><div id="energiaFill"></div></div>
-        <p>👹 Fase 8: Campo Aberto. Dois inimigos atacam!</p>
-        <button onclick="lutarDoisInimigos(); tocarAtaque();">Lutar!</button>
+        <p>👹 Fase 8: Dois inimigos aparecem juntos!</p>
+        <button onclick="lutarDoisInimigos(); tocarAtaque();">Lutar</button>
+        <button onclick="fugirDosDois(); tocarClique();">Fugir</button>
     `;
 }
 
 function lutarDoisInimigos() {
     atualizarEnergia(-30);
     document.getElementById('gameScreen').innerHTML = `
-        <p>💥 Você venceu os dois inimigos!</p>
+        <p>💥 Vitória difícil, mas você sobreviveu!</p>
+        <button onclick="fase9(); tocarClique();">Fase 9</button>
+    `;
+}
+
+function fugirDosDois() {
+    atualizarEnergia(-15);
+    document.getElementById('gameScreen').innerHTML = `
+        <p>🏃‍♂️ Você conseguiu escapar por pouco.</p>
         <button onclick="fase9(); tocarClique();">Fase 9</button>
     `;
 }
 
 function fase9() {
-    document.body.className = "fase1";
-    document.body.style.fontFamily = "'VT323', monospace";
-    atualizarEnergia(-10);
     document.getElementById('gameScreen').innerHTML = `
-        <div id="energiaBar"><div id="energiaFill"></div></div>
-        <p>🌀 Fase 9: Sala do Portal Final.</p>
-        <p>Deseja restaurar energia antes do Chefão?</p>
-        <button onclick="recuperarEnergia(); tocarClique();">Restaurar Energia</button>
-        <button onclick="fase10(); tocarClique();">Entrar no portal sem recuperar</button>
+        <p>🌀 Fase 9: Sala do Portal Final!</p>
+        <button onclick="restaurarEnergia(); tocarClique();">Restaurar Energia</button>
+        <button onclick="fase10(); tocarClique();">Ir direto para o Chefão</button>
     `;
 }
 
-function recuperarEnergia() {
+function restaurarEnergia() {
     atualizarEnergia(30);
-    document.getElementById('gameScreen').innerHTML = `
-        <p>✅ Energia restaurada!</p>
-        <button onclick="fase10(); tocarClique();">Ir para o Chefão</button>
-    `;
+    fase10();
 }
 
 function fase10() {
-    document.body.className = "fase4";
-    document.body.style.fontFamily = "'Press Start 2P', cursive";
     document.getElementById('gameScreen').innerHTML = `
-        <div id="energiaBar"><div id="energiaFill"></div></div>
-        <p>👑 Fase 10: CHEFÃO FINAL - Entidade Suprema do Folclore!</p>
-        <p>Você luta bravamente...</p>
+        <p>👑 Fase 10: CHEFÃO FINAL - Entidade Suprema!</p>
         <button onclick="calcularRanking(); tocarClique();">Ver Resultado Final</button>
     `;
 }
@@ -271,7 +281,7 @@ function calcularRanking() {
     else rank = "D – Sobreviveu por pouco";
 
     document.getElementById('gameScreen').innerHTML = `
-        <p>🏆 Ranking Final:</p>
+        <p>🏆 Seu Ranking Final:</p>
         <h2>${rank}</h2>
         <p>Obrigado por jogar!</p>
     `;

@@ -1,306 +1,257 @@
-/* Importação das fontes do Google Fonts (garanta que estão no HTML também) */
-/* font-family: 'VT323', monospace; */
-/* font-family: 'Press Start 2P', cursive; */
-
 body {
     margin: 0;
     padding: 0;
-    background-color: #0c0c0c; /* Fundo escuro padrão */
-    color: #00ff99; /* Cor principal de texto (verde neon) */
-    font-family: 'VT323', monospace; /* Fonte padrão do jogo */
-    overflow-x: hidden; /* Evita scroll horizontal indesejado */
-    transition: background-image 1s ease-in-out; /* Transição suave para mudança de fundo */
-    min-height: 100vh; /* Ocupa a altura total da viewport */
-    display: flex; /* Para centralizar o container */
-    justify-content: center;
-    align-items: center;
-    flex-direction: column; /* Para empilhar container e inventário */
-    box-sizing: border-box; /* Inclui padding na largura/altura */
-}
-
-/* Estilo para o contêiner principal do jogo */
-.container {
-    position: relative;
-    z-index: 2; /* Acima do canvas do Matrix */
-    max-width: 800px;
-    width: 95%; /* Adapta-se melhor a telas menores */
-    margin: 20px auto; /* Centraliza e adiciona margem superior/inferior */
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.9); /* Fundo semi-transparente para legibilidade */
-    border-radius: 10px;
-    box-shadow: 0 0 20px #00ff99; /* Sombra brilhante */
-    text-align: center;
-    box-sizing: border-box; /* Inclui padding e borda na largura/altura */
-}
-
-/* Estilos de cabeçalho */
-h1#gameTitle {
-    font-family: 'Press Start 2P', cursive; /* Fonte mais chamativa para o título */
-    font-size: 2em;
-    text-shadow: 0 0 10px #00ff99;
-    margin-bottom: 25px;
-    transition: font-size 0.3s ease; /* Transição para responsividade */
-}
-
-/* Estilo para o texto principal do jogo */
-#gameScreen p {
-    background-color: #222222;
-    border: 1px solid #009900;
-    padding: 15px;
-    margin-bottom: 25px;
-    min-height: 80px; /* Altura mínima para o texto */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1em;
-    line-height: 1.5;
-    text-shadow: 0 0 3px rgba(0, 255, 0, 0.3);
-}
-
-/* Estilos para botões (opções do jogo) */
-#gameScreen .options button {
-    width: calc(100% - 20px); /* Ocupa quase toda a largura do container com padding */
-    margin: 8px 10px; /* Margem superior/inferior e nas laterais */
-    padding: 12px;
-    border-radius: 5px;
-    border: 1px solid #00ff99;
-    background-color: #1a1a1a; /* Fundo levemente mais claro */
+    background-color: #0c0c0c;
     color: #00ff99;
     font-family: 'VT323', monospace;
-    font-size: 1.1em;
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
-    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-    letter-spacing: 1px; /* Espaçamento entre letras para estilo retro */
-    box-shadow: 0 0 5px rgba(0, 255, 153, 0.5); /* Pequeno brilho */
-}
-
-#gameScreen .options button:hover {
-    background-color: #00cc77; /* Verde mais claro no hover */
-    color: #0c0c0c; /* Texto escuro no hover para contraste */
-    box-shadow: 0 0 15px rgba(0, 255, 153, 0.8); /* Brilho mais intenso */
-}
-
-#gameScreen .options button:active {
-    background-color: #009955;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5); /* Efeito de "apertar" */
-}
-
-/* Estilos da barra de energia e temporizador */
-#gameStats {
-    margin-top: 20px;
-    padding-top: 10px;
-    border-top: 1px dashed #00ff99;
-    color: #00ff99;
-    font-size: 1.1em;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#energiaBar {
-    background-color: #333; /* Fundo da barra de energia */
-    border: 1px solid #00ff99;
-    width: 90%; /* Largura da barra */
-    margin: 10px auto;
-    height: 25px; /* Altura da barra */
-    border-radius: 5px;
-    overflow: hidden; /* Garante que o preenchimento não saia do limite */
-}
-
-#energiaFill {
-    background-color: #00ff99; /* Cor de preenchimento da energia */
-    height: 100%;
-    width: 100%; /* Largura inicial, será controlada por JS */
-    border-radius: 5px;
-    transition: width 0.5s ease-out; /* Transição suave na mudança de largura */
-}
-
-/* Estilo para o temporizador */
-#timer {
-    color: #ff3333; /* Vermelho para destaque */
-    font-weight: bold;
-    margin: 10px 0;
-    font-size: 1.2em;
-    text-shadow: 0 0 5px rgba(255, 51, 51, 0.7); /* Efeito de brilho */
-}
-
-/* Estilos de inventário */
-#playerInventory {
-    background-color: rgba(0, 0, 0, 0.7);
-    border: 1px solid #00ff99;
-    border-radius: 5px;
-    padding: 10px 20px;
-    margin-top: 20px;
-    max-width: 800px;
-    width: 95%;
-    box-shadow: 0 0 10px #00ff99;
-    box-sizing: border-box;
-}
-#playerInventory h3 {
-    color: #00ff99;
-    margin-bottom: 10px;
-}
-#inventoryList {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
-}
-#inventoryList li {
-    background-color: #1a1a1a;
-    border: 1px solid #00ff99;
-    padding: 5px 10px;
-    border-radius: 3px;
-    font-size: 0.9em;
-}
-.hidden {
-    display: none;
+    align-items: center;
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+    transition: background-image 1s ease-in-out, background-color 1s ease-in-out; /* Transição de fundo */
+    overflow: hidden; /* Evita barras de rolagem desnecessárias */
 }
 
-
-/* Estilos de fundo por fase (usados pelo JS para aplicar classes ao body) */
-/* Nomes dos arquivos ajustados conforme o que você forneceu */
-body.bg-fase-intro {
-    background-image: url('images/floresta_frio.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-body.bg-fase-1 {
-    background-image: url('images/depositphotos_671538026-stock-photo-night-forest-winter-snow-trees.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-body.bg-fase-2 {
-    background-image: url('images/pngtree-frozen-winter-forest-with-snow-covered-trees-image_15654789.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-body.bg-fase-3 {
-    background-image: url('images/pngtree-winter-wonderland-enchanting-3d-art-of-a-frozen-stream-in-a-picture-image_5802580.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-body.bg-fase-4 {
-    background-image: url('images/preview16.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-/* PARA AS PROXIMAS FASES (5 a 10 e final) VOCÊ PRECISARÁ ADICIONAR AS IMAGENS COM ESSES NOMES OU ME FORNECER NOVOS NOMES */
-body.bg-fase-5 {
-    background-image: url('images/bg_montanha_nevada.jpg'); /* Placeholder */
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-body.bg-fase-6 {
-    background-image: url('images/bg_posto_avancado.jpg'); /* Placeholder */
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-body.bg-fase-7 {
-    background-image: url('images/bg_base_subterranea.jpg'); /* Placeholder */
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-body.bg-fase-8 {
-    background-image: url('images/bg_nexus_hacker.jpg'); /* Placeholder */
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-body.bg-fase-9 {
-    background-image: url('images/bg_portal_distorcido.jpg'); /* Placeholder */
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-body.bg-fase-final {
-    background-image: url('images/bg_boss_arena.jpg'); /* Placeholder */
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-}
-/* No background default, sem imagem, apenas cor de fundo */
-body.no-bg {
-    background-image: none;
-}
-
-
-/* Estilos para o canvas do efeito Matrix */
+/* Efeito Matrix */
 #matrixCanvas {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1; /* Fica atrás do container do jogo */
-    display: none; /* Inicia oculto, será ativado pelo JS */
-    pointer-events: none; /* Não interfere com cliques */
+    z-index: 1;
+    pointer-events: none; /* Permite cliques nos elementos abaixo */
+    opacity: 0.3; /* Ajuste a opacidade do efeito matrix */
+    display: none; /* Inicia oculto, ativado por JS */
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-    .container {
-        margin: 10px;
-        padding: 15px;
-    }
-    h1#gameTitle {
-        font-size: 1.5em;
-    }
-    #gameScreen p {
-        font-size: 1em;
-        min-height: 60px;
-    }
-    #gameScreen .options button {
-        font-size: 1em;
-        padding: 10px;
-        margin: 5px;
-    }
-    #gameStats, #playerInventory {
-        font-size: 0.9em;
-        padding: 8px 15px;
-    }
-}
-@media (max-width: 480px) {
-    h1#gameTitle {
-        font-size: 1.2em;
-    }
-    .container {
-        padding: 10px;
-    }
-    #gameScreen .options button {
-        font-size: 0.9em;
-        padding: 8px;
-    }
+.container {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    box-shadow: 0 0 15px #00ff99;
+    text-align: center;
+    border: 2px solid #00ff99;
+    /* Adicionado para transição de conteúdo */
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
 }
 
-/* Classes para alteração de fonte via JS (se necessário) */
-.font-vt323 {
-    font-family: 'VT323', monospace !important;
+h1 {
+    font-family: 'Press Start 2P', cursive;
+    color: #00ffff;
+    text-shadow: 0 0 8px #00ffff;
+    margin-bottom: 20px;
+    font-size: 1.8em;
 }
-.font-press-start {
-    font-family: 'Press Start 2P', cursive !important;
+
+#gameScreen p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+input, select, button {
+    width: 90%;
+    margin: 10px auto; /* Centraliza os elementos */
+    padding: 12px; /* Aumenta o padding */
+    border-radius: 5px;
+    border: 1px solid #00ff99;
+    background-color: #0c0c0c;
+    color: #00ff99;
+    font-family: 'VT323', monospace;
+    font-size: 1.1em;
+    box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
+}
+
+button {
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 5px #00ff99; /* Sombra sutil nos botões */
+}
+
+button:hover {
+    background-color: #00cc77;
+    color: #0c0c0c;
+    box-shadow: 0 0 15px #00ff99; /* Sombra mais forte no hover */
+}
+
+/* Barra de Energia */
+.stats {
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    border: 1px solid #00ff99;
+    display: flex; /* Para alinhar barra e texto */
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Espaço entre os itens */
+}
+
+#energiaBar {
+    background-color: #333;
+    border: 1px solid #00ff99;
+    width: 60%; /* Ajuste a largura da barra */
+    height: 25px; /* Aumenta a altura */
+    border-radius: 5px;
+    overflow: hidden; /* Garante que o preenchimento não transborde */
+}
+
+#energiaFill {
+    height: 100%;
+    width: 100%; /* Começa cheio */
+    background-color: #ff00ff; /* Cor da barra de energia */
+    transition: width 0.5s ease-out; /* Suaviza a transição da barra */
+}
+
+#energiaDisplay {
+    font-size: 1.2em;
+    color: #ff00ff;
+    font-weight: bold;
+}
+
+#timer {
+    font-size: 1.2em;
+    color: #00ffff;
+    font-weight: bold;
+    margin-left: 15px; /* Espaçamento do timer */
+}
+
+/* Mensagens de Feedback */
+.feedback-message {
+    margin-top: 15px;
+    font-style: italic;
+    color: #ffff00; /* Amarelo para feedback */
+    opacity: 1;
+    transition: opacity 0.5s ease-out;
+}
+
+/* Inventário */
+#playerInventory {
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    border: 1px solid #00ff99;
+    text-align: left;
+}
+
+#playerInventory h3 {
+    text-align: center;
+    color: #00ff99;
+    margin-bottom: 10px;
+}
+
+#inventoryList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#inventoryList li {
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid #005533;
+    padding: 5px 10px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    color: #00cc77;
+}
+
+/* Ranking Final */
+#rankingScreen h2 {
+    font-size: 2.5em;
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+#rankingScreen p {
+    font-size: 1.5em;
+    margin-top: 15px;
+    color: #00ff99;
+}
+
+#rankingScreen .score {
+    font-size: 3em;
+    color: #ff00ff;
+    font-weight: bold;
+    text-shadow: 0 0 12px #ff00ff;
+}
+
+/* Classes para fundos por fase */
+.bg-fase-0 { background-image: url('images/bg-fase-0-menu.jpg'); } /* Menu Inicial */
+.bg-fase-1 { background-image: url('images/depositphotos_671538026-stock-photo-night-forest-winter-snow-trees.jpg'); }
+.bg-fase-2 { background-image: url('images/pngtree-winter-wonderland-enchanting-3d-art-of-a-frozen-stream-in-a-picture-image_5802580.jpg'); }
+.bg-fase-3 { background-image: url('images/pngtree-frozen-winter-forest-with-snow-covered-trees-image_15654789.jpg'); }
+/* Adicione mais backgrounds aqui conforme tiver as imagens */
+.bg-fase-4 { background-color: #333; } /* Placeholder */
+.bg-fase-5 { background-color: #444; } /* Placeholder */
+.bg-fase-6 { background-color: #555; } /* Placeholder */
+.bg-fase-7 { background-color: #666; } /* Placeholder */
+.bg-fase-8 { background-color: #777; } /* Placeholder */
+.bg-fase-9 { background-color: #888; } /* Placeholder */
+.bg-fase-final { background-color: #999; } /* Placeholder */
+.bg-game-over { background-color: #880000; } /* Cor para Game Over */
+.bg-victory { background-color: #008800; } /* Cor para Vitória */
+
+
+/* Classes de Fontes */
+.font-pixel { font-family: 'Press Start 2P', cursive; }
+.font-typewriter { font-family: 'VT323', monospace; }
+
+/* Utilitários */
+.hidden {
+    display: none;
+}
+
+/* Novo: Transition Overlay */
+.transition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.95); /* Mostly black to cover content */
+    z-index: 1000; /* Ensure it's on top */
+    opacity: 0; /* Starts hidden */
+    pointer-events: none; /* Allows clicks to pass through when not active */
+    display: flex; /* For centering content if needed, like a loading text */
+    justify-content: center;
+    align-items: center;
+    color: #00ff99;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 2em;
+    text-shadow: 0 0 10px #00ff99;
+}
+
+/* Animações para Glitch Effect */
+@keyframes glitch-effect {
+    0% { transform: translate(0); filter: hue-rotate(0deg); opacity: 1; }
+    20% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); }
+    40% { transform: translate(-2px, -2px); filter: hue-rotate(180deg); }
+    60% { transform: translate(2px, 2px); filter: hue-rotate(270deg); }
+    80% { transform: translate(2px, -2px); filter: hue-rotate(360deg); }
+    100% { transform: translate(0); filter: hue-rotate(0deg); opacity: 1; }
+}
+
+@keyframes fade-out-content {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes fade-in-content {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Specific classes for glitch animation control */
+.glitch-active {
+    animation: glitch-effect 0.3s steps(1) infinite alternate; /* Fast, jarring glitch */
 }

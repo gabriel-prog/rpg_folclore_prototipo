@@ -1,15 +1,21 @@
+/* Importação das fontes do Google Fonts (garanta que estão no HTML também) */
+/* font-family: 'VT323', monospace; */
+/* font-family: 'Press Start 2P', cursive; */
+
 body {
     margin: 0;
     padding: 0;
     background-color: #0c0c0c; /* Fundo escuro padrão */
     color: #00ff99; /* Cor principal de texto (verde neon) */
-    font-family: 'VT323', monospace; /* Fonte estilo terminal */
+    font-family: 'VT323', monospace; /* Fonte padrão do jogo */
     overflow-x: hidden; /* Evita scroll horizontal indesejado */
     transition: background-image 1s ease-in-out; /* Transição suave para mudança de fundo */
     min-height: 100vh; /* Ocupa a altura total da viewport */
     display: flex; /* Para centralizar o container */
     justify-content: center;
     align-items: center;
+    flex-direction: column; /* Para empilhar container e inventário */
+    box-sizing: border-box; /* Inclui padding na largura/altura */
 }
 
 /* Estilo para o contêiner principal do jogo */
@@ -17,6 +23,7 @@ body {
     position: relative;
     z-index: 2; /* Acima do canvas do Matrix */
     max-width: 800px;
+    width: 95%; /* Adapta-se melhor a telas menores */
     margin: 20px auto; /* Centraliza e adiciona margem superior/inferior */
     padding: 20px;
     background: rgba(0, 0, 0, 0.9); /* Fundo semi-transparente para legibilidade */
@@ -27,17 +34,33 @@ body {
 }
 
 /* Estilos de cabeçalho */
-h1 {
+h1#gameTitle {
     font-family: 'Press Start 2P', cursive; /* Fonte mais chamativa para o título */
     font-size: 2em;
     text-shadow: 0 0 10px #00ff99;
     margin-bottom: 25px;
+    transition: font-size 0.3s ease; /* Transição para responsividade */
 }
 
-/* Estilos para inputs, selects e botões (se for usar input/select no futuro) */
-input, select, button {
+/* Estilo para o texto principal do jogo */
+#gameScreen p {
+    background-color: #222222;
+    border: 1px solid #009900;
+    padding: 15px;
+    margin-bottom: 25px;
+    min-height: 80px; /* Altura mínima para o texto */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+    line-height: 1.5;
+    text-shadow: 0 0 3px rgba(0, 255, 0, 0.3);
+}
+
+/* Estilos para botões (opções do jogo) */
+#gameScreen .options button {
     width: calc(100% - 20px); /* Ocupa quase toda a largura do container com padding */
-    margin: 10px 10px; /* Margem superior/inferior e nas laterais */
+    margin: 8px 10px; /* Margem superior/inferior e nas laterais */
     padding: 12px;
     border-radius: 5px;
     border: 1px solid #00ff99;
@@ -45,20 +68,23 @@ input, select, button {
     color: #00ff99;
     font-family: 'VT323', monospace;
     font-size: 1.1em;
-}
-
-/* Estilo específico para botões (opções do jogo) */
-button {
     cursor: pointer;
     font-weight: bold;
     text-transform: uppercase;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
     letter-spacing: 1px; /* Espaçamento entre letras para estilo retro */
+    box-shadow: 0 0 5px rgba(0, 255, 153, 0.5); /* Pequeno brilho */
 }
 
-button:hover {
+#gameScreen .options button:hover {
     background-color: #00cc77; /* Verde mais claro no hover */
     color: #0c0c0c; /* Texto escuro no hover para contraste */
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.8); /* Brilho mais intenso */
+}
+
+#gameScreen .options button:active {
+    background-color: #009955;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5); /* Efeito de "apertar" */
 }
 
 /* Estilos da barra de energia e temporizador */
@@ -68,6 +94,9 @@ button:hover {
     border-top: 1px dashed #00ff99;
     color: #00ff99;
     font-size: 1.1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #energiaBar {
@@ -97,25 +126,128 @@ button:hover {
     text-shadow: 0 0 5px rgba(255, 51, 51, 0.7); /* Efeito de brilho */
 }
 
-/* Estilos de fundo por fase (usados pelo JS para aplicar classes ao body) */
-/* Lembre-se: Verifique a capitalização dos nomes dos arquivos de imagem e da pasta 'images/' */
-body.fase-bg-1 {
-    background-image: url('images/floresta_frio.jpg'); /* Exemplo: Floresta Congelada */
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-attachment: fixed; /* Imagem de fundo fixa */
+/* Estilos de inventário */
+#playerInventory {
+    background-color: rgba(0, 0, 0, 0.7);
+    border: 1px solid #00ff99;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin-top: 20px;
+    max-width: 800px;
+    width: 95%;
+    box-shadow: 0 0 10px #00ff99;
+    box-sizing: border-box;
 }
-/* TODO: Adicionar mais classes para outras fases, ex: */
-/*
-body.fase-bg-2 {
-    background-image: url('images/caverna_gelo.jpg');
+#playerInventory h3 {
+    color: #00ff99;
+    margin-bottom: 10px;
+}
+#inventoryList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+#inventoryList li {
+    background-color: #1a1a1a;
+    border: 1px solid #00ff99;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+.hidden {
+    display: none;
+}
+
+
+/* Estilos de fundo por fase (usados pelo JS para aplicar classes ao body) */
+/* Nomes dos arquivos ajustados conforme o que você forneceu */
+body.bg-fase-intro {
+    background-image: url('images/floresta_frio.jpg');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
 }
-*/
+body.bg-fase-1 {
+    background-image: url('images/depositphotos_671538026-stock-photo-night-forest-winter-snow-trees.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+body.bg-fase-2 {
+    background-image: url('images/pngtree-frozen-winter-forest-with-snow-covered-trees-image_15654789.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+body.bg-fase-3 {
+    background-image: url('images/pngtree-winter-wonderland-enchanting-3d-art-of-a-frozen-stream-in-a-picture-image_5802580.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+body.bg-fase-4 {
+    background-image: url('images/preview16.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+/* PARA AS PROXIMAS FASES (5 a 10 e final) VOCÊ PRECISARÁ ADICIONAR AS IMAGENS COM ESSES NOMES OU ME FORNECER NOVOS NOMES */
+body.bg-fase-5 {
+    background-image: url('images/bg_montanha_nevada.jpg'); /* Placeholder */
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+body.bg-fase-6 {
+    background-image: url('images/bg_posto_avancado.jpg'); /* Placeholder */
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+body.bg-fase-7 {
+    background-image: url('images/bg_base_subterranea.jpg'); /* Placeholder */
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+body.bg-fase-8 {
+    background-image: url('images/bg_nexus_hacker.jpg'); /* Placeholder */
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+body.bg-fase-9 {
+    background-image: url('images/bg_portal_distorcido.jpg'); /* Placeholder */
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+body.bg-fase-final {
+    background-image: url('images/bg_boss_arena.jpg'); /* Placeholder */
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+/* No background default, sem imagem, apenas cor de fundo */
+body.no-bg {
+    background-image: none;
+}
+
 
 /* Estilos para o canvas do efeito Matrix */
 #matrixCanvas {
@@ -129,17 +261,46 @@ body.fase-bg-2 {
     pointer-events: none; /* Não interfere com cliques */
 }
 
-/* Estilos para telas menores (responsividade) */
+/* Responsividade */
 @media (max-width: 768px) {
     .container {
         margin: 10px;
         padding: 15px;
     }
-    h1 {
+    h1#gameTitle {
         font-size: 1.5em;
     }
-    input, select, button {
-        width: calc(100% - 10px);
+    #gameScreen p {
+        font-size: 1em;
+        min-height: 60px;
+    }
+    #gameScreen .options button {
+        font-size: 1em;
+        padding: 10px;
         margin: 5px;
     }
+    #gameStats, #playerInventory {
+        font-size: 0.9em;
+        padding: 8px 15px;
+    }
+}
+@media (max-width: 480px) {
+    h1#gameTitle {
+        font-size: 1.2em;
+    }
+    .container {
+        padding: 10px;
+    }
+    #gameScreen .options button {
+        font-size: 0.9em;
+        padding: 8px;
+    }
+}
+
+/* Classes para alteração de fonte via JS (se necessário) */
+.font-vt323 {
+    font-family: 'VT323', monospace !important;
+}
+.font-press-start {
+    font-family: 'Press Start 2P', cursive !important;
 }

@@ -4,17 +4,13 @@ body {
     background-color: #0c0c0c;
     color: #00ff99;
     font-family: 'VT323', monospace;
+    overflow: hidden; /* Evita barras de rolagem desnecessárias */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-size: cover;
-    background-position: center;
-    transition: background-image 1s ease-in-out, background-color 1s ease-in-out;
-    overflow: hidden;
 }
 
-/* Efeito Matrix */
 #matrixCanvas {
     position: fixed;
     top: 0;
@@ -22,9 +18,6 @@ body {
     width: 100%;
     height: 100%;
     z-index: 1;
-    pointer-events: none;
-    opacity: 0.3;
-    display: none;
 }
 
 .container {
@@ -37,46 +30,53 @@ body {
     border-radius: 10px;
     box-shadow: 0 0 15px #00ff99;
     text-align: center;
-    border: 2px solid #00ff99;
-    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    border: 2px solid #00ff99; /* Borda cyberpunk */
+    box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura */
 }
 
-h1 {
+#gameTitle {
     font-family: 'Press Start 2P', cursive;
-    color: #00ffff;
-    text-shadow: 0 0 8px #00ffff;
+    color: #00ffff; /* Ciano para o título */
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
     margin-bottom: 20px;
-    font-size: 1.8em;
+}
+
+#gameScreen {
+    min-height: 300px; /* Garante um espaço mínimo */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px; /* Espaço entre elementos */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 1.5s ease-in-out, opacity 1.5s ease-in-out; /* Transição para o fundo da fase e opacidade */
+    padding: 10px; /* Pequeno padding interno */
+    border-radius: 8px;
+    box-sizing: border-box;
 }
 
 #gameScreen p {
     font-size: 1.1em;
     line-height: 1.6;
-    margin-bottom: 20px;
-    /* Cursor para o efeito de máquina de escrever */
-    border-right: .15em solid #00ff99; /* Adiciona um cursor piscante */
-    white-space: nowrap; /* Impede que o texto quebre linha */
-    overflow: hidden; /* Esconde o texto que não foi digitado ainda */
-    animation: typing-cursor .75s step-end infinite;
+    margin: 5px 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente para o texto */
+    padding: 8px 12px;
+    border-radius: 5px;
+    max-width: 90%; /* Limita a largura do parágrafo */
 }
-
-/* Animação do cursor de máquina de escrever */
-@keyframes typing-cursor {
-  from, to { border-color: transparent }
-  50% { border-color: #00ff99; }
-}
-
 
 input, select, button {
-    width: 90%;
-    margin: 10px auto;
-    padding: 12px;
+    width: 80%; /* Ajustado para um pouco menor */
+    margin: 8px auto; /* Centraliza melhor */
+    padding: 12px; /* Aumentado o padding */
     border-radius: 5px;
     border: 1px solid #00ff99;
     background-color: #0c0c0c;
     color: #00ff99;
     font-family: 'VT323', monospace;
-    font-size: 1.1em;
+    font-size: 1em;
     box-sizing: border-box;
 }
 
@@ -85,220 +85,217 @@ button {
     font-weight: bold;
     text-transform: uppercase;
     transition: all 0.3s ease;
-    box-shadow: 0 0 5px #00ff99;
+    box-shadow: 0 0 5px #00ff99; /* Efeito neon sutil */
 }
 
 button:hover {
     background-color: #00cc77;
     color: #0c0c0c;
-    box-shadow: 0 0 15px #00ff99;
+    box-shadow: 0 0 15px #00cc77; /* Brilho maior no hover */
 }
 
-/* Barra de Energia */
-.stats {
+.mensagem {
+    position: fixed; /* Fixa a mensagem na tela */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centraliza a mensagem */
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #00ff99;
+    padding: 20px;
+    border: 2px solid #00ff99;
+    border-radius: 10px;
+    font-size: 1.2em;
+    z-index: 100; /* Garante que fique acima de outros elementos */
+    opacity: 1;
+    transition: opacity 1s ease-out;
+}
+
+.mensagem.success {
+    border-color: #00ff00;
+    color: #00ff00;
+}
+
+.mensagem.alert {
+    border-color: #ff0000;
+    color: #ff0000;
+}
+
+.mensagem.info {
+    border-color: #00ffff;
+    color: #00ffff;
+}
+
+/* Estilos da HUD */
+#hud {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
     margin-top: 20px;
     padding: 10px;
     background: rgba(0, 0, 0, 0.7);
-    border-radius: 8px;
     border: 1px solid #00ff99;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 700px; /* Limita a largura da HUD */
+    box-sizing: border-box;
+}
+
+#hud p {
+    margin: 0;
+    font-size: 1em;
+    text-transform: uppercase;
 }
 
 #energiaBar {
     background-color: #333;
     border: 1px solid #00ff99;
-    width: 60%;
-    height: 25px;
+    width: 90%; /* Ocupa mais espaço na HUD */
+    height: 18px;
     border-radius: 5px;
-    overflow: hidden;
+    overflow: hidden; /* Garante que o preenchimento não saia da barra */
 }
 
 #energiaFill {
     height: 100%;
-    width: 100%;
-    background-color: #ff00ff;
-    transition: width 0.5s ease-out;
+    width: 100%; /* Começa cheio */
+    background-color: #00ff99;
+    transition: width 0.5s ease-out; /* Anima a mudança de energia */
+    border-radius: 3px;
 }
 
-#energiaDisplay {
-    font-size: 1.2em;
-    color: #ff00ff;
-    font-weight: bold;
+#reputacaoContainer {
+    margin-top: 5px;
 }
 
-/* Estilos para efeitos de energia e tempo (3.1) */
-.low-energy #energiaDisplay {
-    color: #ffd700; /* Amarelo */
-}
-
-.critical-energy #energiaDisplay {
-    color: #ff0000; /* Vermelho */
-    animation: pulse-red 1s infinite;
-}
-
-.timer-warning {
-    color: #ffd700; /* Amarelo */
-}
-
-.timer-critical {
-    color: #ff0000; /* Vermelho */
-    animation: pulse-red 0.5s infinite;
-}
-
-@keyframes pulse-red {
-    0% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.8; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-
-#timer {
-    font-size: 1.2em;
-    color: #00ffff;
-    font-weight: bold;
-    margin-left: 15px;
-}
-
-/* Mensagens de Feedback */
-.feedback-message {
-    margin-top: 15px;
-    font-style: italic;
-    color: #ffff00;
-    opacity: 1;
-    transition: opacity 0.5s ease-out;
-}
-
-/* Inventário */
-#playerInventory {
-    margin-top: 20px;
+/* Estilos para o Inventário */
+#inventarioContainer {
+    border: 1px solid #00ffff;
     padding: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 8px;
-    border: 1px solid #00ff99;
-    text-align: left;
+    margin-top: 15px;
+    border-radius: 5px;
+    background-color: rgba(0, 50, 50, 0.3); /* Um tom diferente para o inventário */
+    width: 90%;
+    max-height: 150px; /* Limita a altura do inventário */
+    overflow-y: auto; /* Adiciona scroll se muitos itens */
 }
 
-#playerInventory h3 {
-    text-align: center;
-    color: #00ff99;
+#inventarioContainer h3 {
+    color: #00ffff;
+    margin-top: 0;
     margin-bottom: 10px;
 }
 
-#inventoryList {
+#inventarioList {
     list-style: none;
     padding: 0;
     margin: 0;
+    text-align: left;
 }
 
-#inventoryList li {
-    background-color: rgba(0, 0, 0, 0.5);
-    border: 1px solid #005533;
-    padding: 5px 10px;
-    margin-bottom: 5px;
-    border-radius: 3px;
-    color: #00cc77;
-    display: flex; /* Para alinhar o ícone com o texto (3.3) */
-    align-items: center;
-    gap: 8px; /* Espaçamento entre ícone e texto */
+#inventarioList li {
+    padding: 5px 0;
+    border-bottom: 1px dashed rgba(0, 255, 255, 0.3);
 }
 
-#inventoryList li img { /* Estilo para o ícone do inventário (3.3) */
-    width: 24px;
-    height: 24px;
-    vertical-align: middle;
-    filter: brightness(1.5); /* Para destacar o ícone */
+#inventarioList li:last-child {
+    border-bottom: none;
 }
 
-/* Ranking Final */
-#rankingScreen h2 {
-    font-size: 2.5em;
-    color: #00ffff;
-    text-shadow: 0 0 10px #00ffff;
+/* Estilos para Regras, Objetivos e Missões */
+#regrasObjetivosMissoesContainer {
+    border: 1px solid #ff9900; /* Cor para destaque */
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 8px;
+    background-color: rgba(50, 0, 0, 0.4);
+    width: 90%;
+    box-sizing: border-box;
+    text-align: left;
 }
 
-#rankingScreen p {
-    font-size: 1.5em;
-    margin-top: 15px;
-    color: #00ff99;
-}
-
-#rankingScreen .score {
-    font-size: 3em;
-    color: #ff00ff;
-    font-weight: bold;
-    text-shadow: 0 0 12px #ff00ff;
-}
-
-/* Classes para fundos por fase */
-.bg-fase-0 { background-image: url('images/bg-fase-0-menu.jpg'); } /* Menu Inicial/Criação de Personagem */
-.bg-fase-1 { background-image: url('images/depositphotos_671538026-stock-photo-night-forest-winter-snow-trees.jpg'); }
-.bg-fase-2 { background-image: url('images/pngtree-winter-wonderland-enchanting-3d-art-of-a-frozen-stream-in-a-picture-image_5802580.jpg'); }
-.bg-fase-3 { background-image: url('images/pngtree-frozen-winter-forest-with-snow-covered-trees-image_15654789.jpg'); }
-.bg-fase-4 { background-image: url('images/preview16.jpg'); } /* Placeholder - Usando uma imagem que você já enviou */
-.bg-fase-5 { background-color: #444; } /* Placeholder */
-.bg-fase-6 { background-color: #555; } /* Placeholder */
-.bg-fase-7 { background-color: #666; } /* Placeholder */
-.bg-fase-8 { background-color: #777; } /* Placeholder */
-.bg-fase-9 { background-color: #888; } /* Placeholder */
-.bg-fase-10 { background-color: #999; } /* Placeholder */
-.bg-game-over { background-color: #880000; }
-.bg-victory { background-color: #008800; }
-.bg-ranking { background-image: url('images/bg-ranking.jpg'); } /* Novo background para o ranking */
-
-
-/* Classes de Fontes */
-.font-pixel { font-family: 'Press Start 2P', cursive; }
-.font-typewriter { font-family: 'VT323', monospace; }
-
-/* Utilitários */
-.hidden {
-    display: none;
-}
-
-/* Novo: Transition Overlay */
-.transition-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.95);
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #00ff99;
+#regrasObjetivosMissoesContainer h3 {
+    color: #ff9900;
+    margin-top: 0;
+    margin-bottom: 15px;
     font-family: 'Press Start 2P', cursive;
-    font-size: 2em;
-    text-shadow: 0 0 10px #00ff99;
+    text-align: center;
 }
 
-/* Animações para Glitch Effect */
-@keyframes glitch-effect {
-    0% { transform: translate(0); filter: hue-rotate(0deg); opacity: 1; }
-    20% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); }
-    40% { transform: translate(-2px, -2px); filter: hue-rotate(180deg); }
-    60% { transform: translate(2px, 2px); filter: hue-rotate(270deg); }
-    80% { transform: translate(2px, -2px); filter: hue-rotate(360deg); }
-    100% { transform: translate(0); filter: hue-rotate(0deg); opacity: 1; }
+#regrasObjetivosMissoesContainer h4 {
+    color: #ffcc00;
+    margin-top: 15px;
+    margin-bottom: 5px;
 }
 
-@keyframes fade-out-content {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-20px); }
+#regrasObjetivosMissoesContainer ul,
+#regrasObjetivosMissoesContainer p {
+    font-size: 1em;
+    line-height: 1.5;
+    margin-bottom: 10px;
 }
 
-@keyframes fade-in-content {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+#regrasObjetivosMissoesContainer ul {
+    list-style-type: '⚡ '; /* Ícone divertido para a lista */
+    padding-left: 25px;
 }
 
-/* Specific classes for glitch animation control */
-.glitch-active {
-    animation: glitch-effect 0.3s steps(1) infinite alternate;
+#regrasObjetivosMissoesContainer button {
+    display: block; /* Ocupa a largura total */
+    margin: 20px auto 0 auto;
+    background-color: #ff9900;
+    color: #0c0c0c;
+    border-color: #ff9900;
+}
+
+#regrasObjetivosMissoesContainer button:hover {
+    background-color: #cc7a00;
+    box-shadow: 0 0 15px #ff9900;
+}
+
+
+/* Estilo para Game Over */
+.game-over-text {
+    font-family: 'Press Start 2P', cursive;
+    color: #ff0000;
+    font-size: 1.8em;
+    text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+    margin: 50px 0;
+}
+
+.final-text {
+    font-family: 'Press Start 2P', cursive;
+    color: #00ff00;
+    font-size: 1.2em;
+    text-shadow: 0 0 8px #00ff00;
+    margin: 20px 0;
+}
+
+/* Media Queries para responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+        width: 95%;
+    }
+
+    #gameTitle {
+        font-size: 1.5em;
+    }
+
+    #gameScreen p {
+        font-size: 1em;
+    }
+
+    input, select, button {
+        width: 95%;
+        padding: 10px;
+    }
+
+    .game-over-text {
+        font-size: 1.4em;
+    }
+
+    .final-text {
+        font-size: 1em;
+    }
 }

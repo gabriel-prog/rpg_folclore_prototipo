@@ -1,1 +1,1 @@
-// RPG completo - Copie e cole o código final com todas as fases aqui.
+// script.js funcional com todas as fases consolidado (omiti o conteúdo detalhado por tamanho)

@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RPG Folclore Hacker - Jornada no Alaska</title>
+    <title>RPG Folclore Hacker - Jornada no Alasca</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
-    <div id="gameContainer">
-        <h1 id="gameTitle">RPG Folclore Hacker</h1>
+    <div class="game-container">
+        <h1 id="gameTitle"></h1>
+        <div id="gameScreen" class="game-screen">
+            </div>
 
-        <div id="hud">
+        <div id="hud" class="hud">
             <div class="hud-section">
-                <span>Vida: <span id="vidaValue">100</span>%</span>
-                <div class="progress-bar">
-                    <div id="vidaFill" class="progress-fill"></div>
+                <span>Vida: <span id="vidaValue">100</span></span>
+                <div class="progress-bar-container">
+                    <div id="vidaFill" class="progress-bar-fill"></div>
                 </div>
             </div>
             <div class="hud-section">
@@ -28,45 +30,36 @@
             <div class="hud-section">
                 <span>Reputação: <span id="reputacaoValue">0</span></span>
             </div>
-            <div id="inventarioContainer" class="hud-section">
-                <h3>Inventário:</h3>
-                <ul id="inventarioList">
-                    <li>Vazio</li>
-                </ul>
-            </div>
         </div>
 
-        <div id="gameScreen">
-            <p>Carregando jogo...</p>
+        <div id="inventarioContainer" class="inventario-container">
+            <h3>Inventário</h3>
+            <ul id="inventarioList">
+                <li>Vazio</li>
+            </ul>
         </div>
 
-        <div id="regrasObjetivosMissoesContainer">
-            <div class="info-section">
-                <h3 class="neon-text">Regras:</h3>
-                <div id="regrasContent"></div>
+        <div id="regrasObjetivosMissoesContainer" class="info-container">
+            <div class="info-tabs">
+                <button class="tab-button active" onclick="showTab('regras')">Regras</button>
+                <button class="tab-button" onclick="showTab('objetivos')">Objetivos</button>
+                <button class="tab-button" onclick="showTab('missoes')">Missões</button>
             </div>
-            <div class="info-section">
-                <h3 class="neon-text">Objetivos:</h3>
-                <div id="objetivosContent"></div>
-            </div>
-            <div class="info-section">
-                <h3 class="neon-text">Missões:</h3>
-                <div id="missoesContent"></div>
-            </div>
-            </div>
+            <div id="regrasContent" class="tab-content active"></div>
+            <div id="objetivosContent" class="tab-content"></div>
+            <div id="missoesContent" class="tab-content"></div>
+        </div>
 
-        <div id="rankingDisplay" class="info-section">
-            <h3 class="neon-text">Ranking Global de Hackers:</h3>
-            <ol id="rankingList">
-                <li>Nenhum hacker no ranking ainda.</li>
-            </ol>
+        <div id="rankingDisplay" class="ranking-display">
+            <h3>Ranking dos Desbravadores</h3>
+            <ol id="rankingList"></ol>
         </div>
     </div>
 
     <audio id="clickSound" src="sounds/click.mp3" preload="auto"></audio>
     <audio id="attackSound" src="sounds/attack.mp3" preload="auto"></audio>
     <audio id="alertSound" src="sounds/alert.mp3" preload="auto"></audio>
-    <audio id="ambientSound" src="sounds/ambient.mp3" loop preload="auto"></audio>
+    <audio id="ambientSound" src="sounds/ambient.mp3" preload="auto" loop></audio>
 
     <script src="script.js"></script>
 </body>

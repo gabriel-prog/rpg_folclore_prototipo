@@ -4,40 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RPG Folclore Hacker - Jornada no Alasca</title>
-    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <canvas id="matrixCanvas"></canvas>
+
+    <div id="transitionOverlay" class="transition-overlay"></div>
+
     <div class="container">
         <h1 id="gameTitle">🌌 RPG Folclore Hacker - Jornada no Alasca 🌌</h1>
-        <div id="gameScreen"></div> <div class="stats hidden">
+        <div id="gameScreen">
+            </div>
+        <div id="stats" class="stats hidden">
+            <label for="energiaBar">Energia:</label>
             <div id="energiaBar">
                 <div id="energiaFill"></div>
             </div>
             <span id="energiaDisplay">100</span>
             <span id="timer"></span>
         </div>
-        <div id="playerInventory" class="hidden">
+
+        <div id="playerInventory" class="player-inventory hidden">
             <h3>Inventário:</h3>
-            <ul id="inventoryList"></ul>
+            <ul id="inventoryList">
+            </ul>
         </div>
     </div>
 
-    <div id="transitionOverlay" class="transition-overlay"></div>
+    <audio id="clickSound" src="sounds/click.mp3" muted></audio>
+    <audio id="attackSound" src="sounds/attack.mp3" muted></audio>
+    <audio id="alertSound" src="sounds/alert.mp3" muted></audio>
+    <audio id="ambientSound" src="sounds/ambient.mp3" loop muted></audio>
+    <audio id="fase2Music" src="sounds/fase2_music.mp3" loop muted></audio>
+    <audio id="bossMusic" src="sounds/boss_music.mp3" loop muted></audio>
+    <audio id="hackSuccessSound" src="sounds/hack_success.mp3" muted></audio>
+    <audio id="hackFailSound" src="sounds/hack_fail.mp3" muted></audio>
+    <audio id="snowWalkSound" src="sounds/snow_walk.mp3" muted></audio>
+    <audio id="suspenseMusic" src="sounds/suspense_music.mp3" loop muted></audio>
 
-    <canvas id="matrixCanvas"></canvas>
-
-    <audio id="clickSound" src="sounds/click.mp3"></audio>
-    <audio id="attackSound" src="sounds/attack.mp3"></audio>
-    <audio id="alertSound" src="sounds/alert.mp3"></audio>
-    <audio id="ambientSound" src="sounds/ambient.mp3" loop></audio>
-    <audio id="fase2Music" src="sounds/fase2Music.mp3" loop></audio>
-    <audio id="bossMusic" src="sounds/bossMusic.mp3" loop></audio>
-    <audio id="hackSuccessSound" src="sounds/hack_success.mp3"></audio>
-    <audio id="hackFailSound" src="sounds/hack_fail.mp3"></audio>
-    <audio id="snowWalkSound" src="sounds/snow_walk.mp3"></audio>
-    <audio id="suspenseMusic" src="sounds/suspense_loop.mp3" loop></audio>
-    
     <script src="script.js"></script>
 </body>
 </html>

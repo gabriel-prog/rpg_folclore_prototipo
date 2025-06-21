@@ -14,12 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const attackSound = document.getElementById('attackSound');
     const alertSound = document.getElementById('alertSound');
     const ambientSound = document.getElementById('ambientSound');
-    const fase2Music = document.getElementById('fase2Music'); // Nova referência
-    const bossMusic = document.getElementById('bossMusic');   // Nova referência
-    const hackSuccessSound = document.getElementById('hackSuccessSound'); // Nova referência
-    const hackFailSound = document.getElementById('hackFailSound');     // Nova referência
-    const snowWalkSound = document.getElementById('snowWalkSound');     // Nova referência
-    const suspenseMusic = document.getElementById('suspenseMusic');   // Nova referência
+    const fase2Music = document.getElementById('fase2Music');
+    const bossMusic = document.getElementById('bossMusic');
+    const hackSuccessSound = document.getElementById('hackSuccessSound');
+    const hackFailSound = document.getElementById('hackFailSound');
+    const snowWalkSound = document.getElementById('snowWalkSound');
+    const suspenseMusic = document.getElementById('suspenseMusic');
 
     let currentMusic = null;
 

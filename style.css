@@ -1,11 +1,15 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #0c0c0c; /* Fundo escuro */
+    background-color: #0c0c0c; /* Fundo escuro padrão */
     color: #00ff99; /* Cor principal de texto (verde neon) */
     font-family: 'VT323', monospace; /* Fonte estilo terminal */
     overflow-x: hidden; /* Evita scroll horizontal indesejado */
     transition: background-image 1s ease-in-out; /* Transição suave para mudança de fundo */
+    min-height: 100vh; /* Ocupa a altura total da viewport */
+    display: flex; /* Para centralizar o container */
+    justify-content: center;
+    align-items: center;
 }
 
 /* Estilo para o contêiner principal do jogo */
@@ -22,7 +26,15 @@ body {
     box-sizing: border-box; /* Inclui padding e borda na largura/altura */
 }
 
-/* Estilos para inputs, selects e botões */
+/* Estilos de cabeçalho */
+h1 {
+    font-family: 'Press Start 2P', cursive; /* Fonte mais chamativa para o título */
+    font-size: 2em;
+    text-shadow: 0 0 10px #00ff99;
+    margin-bottom: 25px;
+}
+
+/* Estilos para inputs, selects e botões (se for usar input/select no futuro) */
 input, select, button {
     width: calc(100% - 20px); /* Ocupa quase toda a largura do container com padding */
     margin: 10px 10px; /* Margem superior/inferior e nas laterais */
@@ -35,6 +47,7 @@ input, select, button {
     font-size: 1.1em;
 }
 
+/* Estilo específico para botões (opções do jogo) */
 button {
     cursor: pointer;
     font-weight: bold;
@@ -48,7 +61,7 @@ button:hover {
     color: #0c0c0c; /* Texto escuro no hover para contraste */
 }
 
-/* Estilos da barra de energia */
+/* Estilos da barra de energia e temporizador */
 #gameStats {
     margin-top: 20px;
     padding-top: 10px;
@@ -85,13 +98,24 @@ button:hover {
 }
 
 /* Estilos de fundo por fase (usados pelo JS para aplicar classes ao body) */
-body.fase1, body.fase2, body.fase3, body.fase4 {
-    background-image: url('images/floresta_frio.jpg'); /* Verifique o caminho exato */
+/* Lembre-se: Verifique a capitalização dos nomes dos arquivos de imagem e da pasta 'images/' */
+body.fase-bg-1 {
+    background-image: url('images/floresta_frio.jpg'); /* Exemplo: Floresta Congelada */
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed; /* Imagem de fundo fixa */
 }
+/* TODO: Adicionar mais classes para outras fases, ex: */
+/*
+body.fase-bg-2 {
+    background-image: url('images/caverna_gelo.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+*/
 
 /* Estilos para o canvas do efeito Matrix */
 #matrixCanvas {
@@ -111,11 +135,11 @@ body.fase1, body.fase2, body.fase3, body.fase4 {
         margin: 10px;
         padding: 15px;
     }
+    h1 {
+        font-size: 1.5em;
+    }
     input, select, button {
         width: calc(100% - 10px);
         margin: 5px;
-    }
-    #gameTitle {
-        font-size: 1.5em;
     }
 }
